@@ -196,21 +196,3 @@ Limb limbs_mul_add_limb(Limb r[], const Limb a[], Limb b, size_t num_limbs) {
   }
   return carried;
 }
-
-Limb limbs_mul_add_limb(Limb r[], const Limb a[], Limb b, size_t num_limbs) {
-  Limb carried = 0;
-  for (size_t i = 0; i < num_limbs; ++i) {
-    Limb lo;
-    Limb hi;
-    bn_umult_lohi(&lo, &hi, a[i], b);
-    Limb tmp;
-    Carry c = limb_add(&tmp, lo, carried);
-    c = limb_adc(&carried, hi, 0, c);
-    dev_assert_secret(c == 0);
-    c = limb_add(&r[i], r[i], tmp);
-    c = limb_adc(&carried, carried, 0, c);
-    // (A * B) + C + D never carries.
-    dev_assert_secret(c == 0);
-  }
-  return carried;
-}

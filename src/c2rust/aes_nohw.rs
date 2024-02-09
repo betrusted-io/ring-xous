@@ -43,32 +43,34 @@ pub struct AES_NOHW_BATCH {
 pub struct AES_NOHW_SCHEDULE {
     pub keys: [AES_NOHW_BATCH; 15],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub u32_0: [uint32_t; 8],
-    pub u8_0: [uint8_t; 32],
-}
 #[inline]
-unsafe extern "C" fn CRYPTO_bswap4(x: uint32_t) -> uint32_t {
+unsafe extern "C" fn CRYPTO_bswap4(mut x: uint32_t) -> uint32_t {
     return x.swap_bytes();
 }
 #[inline]
-unsafe extern "C" fn GFp_memset(
-    dst: *mut core::ffi::c_void,
-    c: core::ffi::c_int,
-    n: size_t,
-) -> *mut core::ffi::c_void {
-    if n == 0 as core::ffi::c_int as core::ffi::c_uint {
-        return dst;
-    }
-    return memset(dst, c, n);
+unsafe extern "C" fn CRYPTO_store_u32_be(mut out: *mut core::ffi::c_void, mut v: uint32_t) {
+    v = CRYPTO_bswap4(v);
+    OPENSSL_memcpy(
+        out,
+        &mut v as *mut uint32_t as *const core::ffi::c_void,
+        core::mem::size_of::<uint32_t>() as u32,
+    );
 }
 #[inline]
-unsafe extern "C" fn GFp_memcpy(
-    dst: *mut core::ffi::c_void,
-    src: *const core::ffi::c_void,
-    n: size_t,
+unsafe extern "C" fn CRYPTO_load_u32_be(mut in_0: *const core::ffi::c_void) -> uint32_t {
+    let mut v: uint32_t = 0;
+    OPENSSL_memcpy(
+        &mut v as *mut uint32_t as *mut core::ffi::c_void,
+        in_0,
+        core::mem::size_of::<uint32_t>() as u32,
+    );
+    return CRYPTO_bswap4(v);
+}
+#[inline]
+unsafe extern "C" fn OPENSSL_memcpy(
+    mut dst: *mut core::ffi::c_void,
+    mut src: *const core::ffi::c_void,
+    mut n: size_t,
 ) -> *mut core::ffi::c_void {
     if n == 0 as core::ffi::c_int as core::ffi::c_uint {
         return dst;
@@ -76,34 +78,45 @@ unsafe extern "C" fn GFp_memcpy(
     return memcpy(dst, src, n);
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_and(a: aes_word_t, b: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn OPENSSL_memset(
+    mut dst: *mut core::ffi::c_void,
+    mut c: core::ffi::c_int,
+    mut n: size_t,
+) -> *mut core::ffi::c_void {
+    if n == 0 as core::ffi::c_int as core::ffi::c_uint {
+        return dst;
+    }
+    return memset(dst, c, n);
+}
+#[inline]
+unsafe extern "C" fn aes_nohw_and(mut a: aes_word_t, mut b: aes_word_t) -> aes_word_t {
     return a & b;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_or(a: aes_word_t, b: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_or(mut a: aes_word_t, mut b: aes_word_t) -> aes_word_t {
     return a | b;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_xor(a: aes_word_t, b: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_xor(mut a: aes_word_t, mut b: aes_word_t) -> aes_word_t {
     return a ^ b;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_not(a: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_not(mut a: aes_word_t) -> aes_word_t {
     return !a;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_shift_left(a: aes_word_t, i: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_shift_left(mut a: aes_word_t, mut i: aes_word_t) -> aes_word_t {
     return a << i.wrapping_mul(2 as core::ffi::c_int as core::ffi::c_uint);
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_shift_right(a: aes_word_t, i: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_shift_right(mut a: aes_word_t, mut i: aes_word_t) -> aes_word_t {
     return a >> i.wrapping_mul(2 as core::ffi::c_int as core::ffi::c_uint);
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_batch_set(
     mut batch: *mut AES_NOHW_BATCH,
-    in_0: *const aes_word_t,
-    i: size_t,
+    mut in_0: *const aes_word_t,
+    mut i: size_t,
 ) {
     (*batch).w[i as usize] = *in_0.offset(0 as core::ffi::c_int as isize);
     (*batch).w[i.wrapping_add(2 as core::ffi::c_int as core::ffi::c_uint) as usize] =
@@ -115,9 +128,9 @@ unsafe extern "C" fn aes_nohw_batch_set(
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_batch_get(
-    batch: *const AES_NOHW_BATCH,
-    out: *mut aes_word_t,
-    i: size_t,
+    mut batch: *const AES_NOHW_BATCH,
+    mut out: *mut aes_word_t,
+    mut i: size_t,
 ) {
     *out.offset(0 as core::ffi::c_int as isize) = (*batch).w[i as usize];
     *out.offset(1 as core::ffi::c_int as isize) =
@@ -129,11 +142,11 @@ unsafe extern "C" fn aes_nohw_batch_get(
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_delta_swap(
-    a: aes_word_t,
-    mask: aes_word_t,
-    shift: aes_word_t,
+    mut a: aes_word_t,
+    mut mask: aes_word_t,
+    mut shift: aes_word_t,
 ) -> aes_word_t {
-    let b: aes_word_t = (a ^ a >> shift) & mask;
+    let mut b: aes_word_t = (a ^ a >> shift) & mask;
     return a ^ b ^ b << shift;
 }
 #[inline]
@@ -166,10 +179,10 @@ unsafe extern "C" fn aes_nohw_uncompact_word(mut a: uint32_t) -> uint32_t {
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_word_from_bytes(
-    a0: uint8_t,
-    a1: uint8_t,
-    a2: uint8_t,
-    a3: uint8_t,
+    mut a0: uint8_t,
+    mut a1: uint8_t,
+    mut a2: uint8_t,
+    mut a3: uint8_t,
 ) -> uint32_t {
     return a0 as uint32_t
         | (a1 as uint32_t) << 8 as core::ffi::c_int
@@ -177,20 +190,20 @@ unsafe extern "C" fn aes_nohw_word_from_bytes(
         | (a3 as uint32_t) << 24 as core::ffi::c_int;
 }
 #[inline]
-unsafe extern "C" fn lo(a: uint32_t) -> uint8_t {
+unsafe extern "C" fn lo(mut a: uint32_t) -> uint8_t {
     return a as uint8_t;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_compact_block(out: *mut aes_word_t, in_0: *const uint8_t) {
-    let _ = GFp_memcpy(
+unsafe extern "C" fn aes_nohw_compact_block(mut out: *mut aes_word_t, mut in_0: *const uint8_t) {
+    OPENSSL_memcpy(
         out as *mut core::ffi::c_void,
         in_0 as *const core::ffi::c_void,
         16 as core::ffi::c_int as size_t,
     );
-    let a0: uint32_t = aes_nohw_compact_word(*out.offset(0 as core::ffi::c_int as isize));
-    let a1: uint32_t = aes_nohw_compact_word(*out.offset(1 as core::ffi::c_int as isize));
-    let a2: uint32_t = aes_nohw_compact_word(*out.offset(2 as core::ffi::c_int as isize));
-    let a3: uint32_t = aes_nohw_compact_word(*out.offset(3 as core::ffi::c_int as isize));
+    let mut a0: uint32_t = aes_nohw_compact_word(*out.offset(0 as core::ffi::c_int as isize));
+    let mut a1: uint32_t = aes_nohw_compact_word(*out.offset(1 as core::ffi::c_int as isize));
+    let mut a2: uint32_t = aes_nohw_compact_word(*out.offset(2 as core::ffi::c_int as isize));
+    let mut a3: uint32_t = aes_nohw_compact_word(*out.offset(3 as core::ffi::c_int as isize));
     *out.offset(0 as core::ffi::c_int as isize) =
         aes_nohw_word_from_bytes(lo(a0), lo(a1), lo(a2), lo(a3));
     *out.offset(1 as core::ffi::c_int as isize) = aes_nohw_word_from_bytes(
@@ -213,11 +226,11 @@ unsafe extern "C" fn aes_nohw_compact_block(out: *mut aes_word_t, in_0: *const u
     );
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_uncompact_block(out: *mut uint8_t, in_0: *const aes_word_t) {
-    let a0: uint32_t = *in_0.offset(0 as core::ffi::c_int as isize);
-    let a1: uint32_t = *in_0.offset(1 as core::ffi::c_int as isize);
-    let a2: uint32_t = *in_0.offset(2 as core::ffi::c_int as isize);
-    let a3: uint32_t = *in_0.offset(3 as core::ffi::c_int as isize);
+unsafe extern "C" fn aes_nohw_uncompact_block(mut out: *mut uint8_t, mut in_0: *const aes_word_t) {
+    let mut a0: uint32_t = *in_0.offset(0 as core::ffi::c_int as isize);
+    let mut a1: uint32_t = *in_0.offset(1 as core::ffi::c_int as isize);
+    let mut a2: uint32_t = *in_0.offset(2 as core::ffi::c_int as isize);
+    let mut a3: uint32_t = *in_0.offset(3 as core::ffi::c_int as isize);
     let mut b0: uint32_t = aes_nohw_word_from_bytes(lo(a0), lo(a1), lo(a2), lo(a3));
     let mut b1: uint32_t = aes_nohw_word_from_bytes(
         lo(a0 >> 8 as core::ffi::c_int),
@@ -241,22 +254,22 @@ unsafe extern "C" fn aes_nohw_uncompact_block(out: *mut uint8_t, in_0: *const ae
     b1 = aes_nohw_uncompact_word(b1);
     b2 = aes_nohw_uncompact_word(b2);
     b3 = aes_nohw_uncompact_word(b3);
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         out as *mut core::ffi::c_void,
         &mut b0 as *mut uint32_t as *const core::ffi::c_void,
         4 as core::ffi::c_int as size_t,
     );
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         out.offset(4 as core::ffi::c_int as isize) as *mut core::ffi::c_void,
         &mut b1 as *mut uint32_t as *const core::ffi::c_void,
         4 as core::ffi::c_int as size_t,
     );
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         out.offset(8 as core::ffi::c_int as isize) as *mut core::ffi::c_void,
         &mut b2 as *mut uint32_t as *const core::ffi::c_void,
         4 as core::ffi::c_int as size_t,
     );
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         out.offset(12 as core::ffi::c_int as isize) as *mut core::ffi::c_void,
         &mut b3 as *mut uint32_t as *const core::ffi::c_void,
         4 as core::ffi::c_int as size_t,
@@ -264,17 +277,17 @@ unsafe extern "C" fn aes_nohw_uncompact_block(out: *mut uint8_t, in_0: *const ae
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_swap_bits(
-    a: *mut aes_word_t,
-    b: *mut aes_word_t,
-    mask: uint32_t,
-    shift: aes_word_t,
+    mut a: *mut aes_word_t,
+    mut b: *mut aes_word_t,
+    mut mask: uint32_t,
+    mut shift: aes_word_t,
 ) {
-    let mask_w: aes_word_t = mask;
-    let swap: aes_word_t = (*a >> shift ^ *b) & mask_w;
+    let mut mask_w: aes_word_t = mask;
+    let mut swap: aes_word_t = (*a >> shift ^ *b) & mask_w;
     *a ^= swap << shift;
     *b ^= swap;
 }
-unsafe extern "C" fn aes_nohw_transpose(batch: *mut AES_NOHW_BATCH) {
+unsafe extern "C" fn aes_nohw_transpose(mut batch: *mut AES_NOHW_BATCH) {
     aes_nohw_swap_bits(
         &mut *((*batch).w)
             .as_mut_ptr()
@@ -317,11 +330,11 @@ unsafe extern "C" fn aes_nohw_transpose(batch: *mut AES_NOHW_BATCH) {
     );
 }
 unsafe extern "C" fn aes_nohw_to_batch(
-    out: *mut AES_NOHW_BATCH,
-    in_0: *const uint8_t,
-    num_blocks: size_t,
+    mut out: *mut AES_NOHW_BATCH,
+    mut in_0: *const uint8_t,
+    mut num_blocks: size_t,
 ) {
-    let _ = GFp_memset(
+    OPENSSL_memset(
         out as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
         core::mem::size_of::<AES_NOHW_BATCH>() as u32,
@@ -351,9 +364,9 @@ unsafe extern "C" fn aes_nohw_to_batch(
     aes_nohw_transpose(out);
 }
 unsafe extern "C" fn aes_nohw_from_batch(
-    out: *mut uint8_t,
-    num_blocks: size_t,
-    batch: *const AES_NOHW_BATCH,
+    mut out: *mut uint8_t,
+    mut num_blocks: size_t,
+    mut batch: *const AES_NOHW_BATCH,
 ) {
     let mut copy: AES_NOHW_BATCH = *batch;
     aes_nohw_transpose(&mut copy);
@@ -382,7 +395,7 @@ unsafe extern "C" fn aes_nohw_from_batch(
 }
 unsafe extern "C" fn aes_nohw_add_round_key(
     mut batch: *mut AES_NOHW_BATCH,
-    key: *const AES_NOHW_BATCH,
+    mut key: *const AES_NOHW_BATCH,
 ) {
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < 8 as core::ffi::c_int as core::ffi::c_uint {
@@ -391,129 +404,129 @@ unsafe extern "C" fn aes_nohw_add_round_key(
     }
 }
 unsafe extern "C" fn aes_nohw_sub_bytes(mut batch: *mut AES_NOHW_BATCH) {
-    let x0: aes_word_t = (*batch).w[7 as core::ffi::c_int as usize];
-    let x1: aes_word_t = (*batch).w[6 as core::ffi::c_int as usize];
-    let x2: aes_word_t = (*batch).w[5 as core::ffi::c_int as usize];
-    let x3: aes_word_t = (*batch).w[4 as core::ffi::c_int as usize];
-    let x4: aes_word_t = (*batch).w[3 as core::ffi::c_int as usize];
-    let x5: aes_word_t = (*batch).w[2 as core::ffi::c_int as usize];
-    let x6: aes_word_t = (*batch).w[1 as core::ffi::c_int as usize];
-    let x7: aes_word_t = (*batch).w[0 as core::ffi::c_int as usize];
-    let y14: aes_word_t = aes_nohw_xor(x3, x5);
-    let y13: aes_word_t = aes_nohw_xor(x0, x6);
-    let y9: aes_word_t = aes_nohw_xor(x0, x3);
-    let y8: aes_word_t = aes_nohw_xor(x0, x5);
-    let t0: aes_word_t = aes_nohw_xor(x1, x2);
-    let y1: aes_word_t = aes_nohw_xor(t0, x7);
-    let y4: aes_word_t = aes_nohw_xor(y1, x3);
-    let y12: aes_word_t = aes_nohw_xor(y13, y14);
-    let y2: aes_word_t = aes_nohw_xor(y1, x0);
-    let y5: aes_word_t = aes_nohw_xor(y1, x6);
-    let y3: aes_word_t = aes_nohw_xor(y5, y8);
-    let t1: aes_word_t = aes_nohw_xor(x4, y12);
-    let y15: aes_word_t = aes_nohw_xor(t1, x5);
-    let y20: aes_word_t = aes_nohw_xor(t1, x1);
-    let y6: aes_word_t = aes_nohw_xor(y15, x7);
-    let y10: aes_word_t = aes_nohw_xor(y15, t0);
-    let y11: aes_word_t = aes_nohw_xor(y20, y9);
-    let y7: aes_word_t = aes_nohw_xor(x7, y11);
-    let y17: aes_word_t = aes_nohw_xor(y10, y11);
-    let y19: aes_word_t = aes_nohw_xor(y10, y8);
-    let y16: aes_word_t = aes_nohw_xor(t0, y11);
-    let y21: aes_word_t = aes_nohw_xor(y13, y16);
-    let y18: aes_word_t = aes_nohw_xor(x0, y16);
-    let t2: aes_word_t = aes_nohw_and(y12, y15);
-    let t3: aes_word_t = aes_nohw_and(y3, y6);
-    let t4: aes_word_t = aes_nohw_xor(t3, t2);
-    let t5: aes_word_t = aes_nohw_and(y4, x7);
-    let t6: aes_word_t = aes_nohw_xor(t5, t2);
-    let t7: aes_word_t = aes_nohw_and(y13, y16);
-    let t8: aes_word_t = aes_nohw_and(y5, y1);
-    let t9: aes_word_t = aes_nohw_xor(t8, t7);
-    let t10: aes_word_t = aes_nohw_and(y2, y7);
-    let t11: aes_word_t = aes_nohw_xor(t10, t7);
-    let t12: aes_word_t = aes_nohw_and(y9, y11);
-    let t13: aes_word_t = aes_nohw_and(y14, y17);
-    let t14: aes_word_t = aes_nohw_xor(t13, t12);
-    let t15: aes_word_t = aes_nohw_and(y8, y10);
-    let t16: aes_word_t = aes_nohw_xor(t15, t12);
-    let t17: aes_word_t = aes_nohw_xor(t4, t14);
-    let t18: aes_word_t = aes_nohw_xor(t6, t16);
-    let t19: aes_word_t = aes_nohw_xor(t9, t14);
-    let t20: aes_word_t = aes_nohw_xor(t11, t16);
-    let t21: aes_word_t = aes_nohw_xor(t17, y20);
-    let t22: aes_word_t = aes_nohw_xor(t18, y19);
-    let t23: aes_word_t = aes_nohw_xor(t19, y21);
-    let t24: aes_word_t = aes_nohw_xor(t20, y18);
-    let t25: aes_word_t = aes_nohw_xor(t21, t22);
-    let t26: aes_word_t = aes_nohw_and(t21, t23);
-    let t27: aes_word_t = aes_nohw_xor(t24, t26);
-    let t28: aes_word_t = aes_nohw_and(t25, t27);
-    let t29: aes_word_t = aes_nohw_xor(t28, t22);
-    let t30: aes_word_t = aes_nohw_xor(t23, t24);
-    let t31: aes_word_t = aes_nohw_xor(t22, t26);
-    let t32: aes_word_t = aes_nohw_and(t31, t30);
-    let t33: aes_word_t = aes_nohw_xor(t32, t24);
-    let t34: aes_word_t = aes_nohw_xor(t23, t33);
-    let t35: aes_word_t = aes_nohw_xor(t27, t33);
-    let t36: aes_word_t = aes_nohw_and(t24, t35);
-    let t37: aes_word_t = aes_nohw_xor(t36, t34);
-    let t38: aes_word_t = aes_nohw_xor(t27, t36);
-    let t39: aes_word_t = aes_nohw_and(t29, t38);
-    let t40: aes_word_t = aes_nohw_xor(t25, t39);
-    let t41: aes_word_t = aes_nohw_xor(t40, t37);
-    let t42: aes_word_t = aes_nohw_xor(t29, t33);
-    let t43: aes_word_t = aes_nohw_xor(t29, t40);
-    let t44: aes_word_t = aes_nohw_xor(t33, t37);
-    let t45: aes_word_t = aes_nohw_xor(t42, t41);
-    let z0: aes_word_t = aes_nohw_and(t44, y15);
-    let z1: aes_word_t = aes_nohw_and(t37, y6);
-    let z2: aes_word_t = aes_nohw_and(t33, x7);
-    let z3: aes_word_t = aes_nohw_and(t43, y16);
-    let z4: aes_word_t = aes_nohw_and(t40, y1);
-    let z5: aes_word_t = aes_nohw_and(t29, y7);
-    let z6: aes_word_t = aes_nohw_and(t42, y11);
-    let z7: aes_word_t = aes_nohw_and(t45, y17);
-    let z8: aes_word_t = aes_nohw_and(t41, y10);
-    let z9: aes_word_t = aes_nohw_and(t44, y12);
-    let z10: aes_word_t = aes_nohw_and(t37, y3);
-    let z11: aes_word_t = aes_nohw_and(t33, y4);
-    let z12: aes_word_t = aes_nohw_and(t43, y13);
-    let z13: aes_word_t = aes_nohw_and(t40, y5);
-    let z14: aes_word_t = aes_nohw_and(t29, y2);
-    let z15: aes_word_t = aes_nohw_and(t42, y9);
-    let z16: aes_word_t = aes_nohw_and(t45, y14);
-    let z17: aes_word_t = aes_nohw_and(t41, y8);
-    let t46: aes_word_t = aes_nohw_xor(z15, z16);
-    let t47: aes_word_t = aes_nohw_xor(z10, z11);
-    let t48: aes_word_t = aes_nohw_xor(z5, z13);
-    let t49: aes_word_t = aes_nohw_xor(z9, z10);
-    let t50: aes_word_t = aes_nohw_xor(z2, z12);
-    let t51: aes_word_t = aes_nohw_xor(z2, z5);
-    let t52: aes_word_t = aes_nohw_xor(z7, z8);
-    let t53: aes_word_t = aes_nohw_xor(z0, z3);
-    let t54: aes_word_t = aes_nohw_xor(z6, z7);
-    let t55: aes_word_t = aes_nohw_xor(z16, z17);
-    let t56: aes_word_t = aes_nohw_xor(z12, t48);
-    let t57: aes_word_t = aes_nohw_xor(t50, t53);
-    let t58: aes_word_t = aes_nohw_xor(z4, t46);
-    let t59: aes_word_t = aes_nohw_xor(z3, t54);
-    let t60: aes_word_t = aes_nohw_xor(t46, t57);
-    let t61: aes_word_t = aes_nohw_xor(z14, t57);
-    let t62: aes_word_t = aes_nohw_xor(t52, t58);
-    let t63: aes_word_t = aes_nohw_xor(t49, t58);
-    let t64: aes_word_t = aes_nohw_xor(z4, t59);
-    let t65: aes_word_t = aes_nohw_xor(t61, t62);
-    let t66: aes_word_t = aes_nohw_xor(z1, t63);
-    let s0: aes_word_t = aes_nohw_xor(t59, t63);
-    let s6: aes_word_t = aes_nohw_xor(t56, aes_nohw_not(t62));
-    let s7: aes_word_t = aes_nohw_xor(t48, aes_nohw_not(t60));
-    let t67: aes_word_t = aes_nohw_xor(t64, t65);
-    let s3: aes_word_t = aes_nohw_xor(t53, t66);
-    let s4: aes_word_t = aes_nohw_xor(t51, t66);
-    let s5: aes_word_t = aes_nohw_xor(t47, t65);
-    let s1: aes_word_t = aes_nohw_xor(t64, aes_nohw_not(s3));
-    let s2: aes_word_t = aes_nohw_xor(t55, aes_nohw_not(t67));
+    let mut x0: aes_word_t = (*batch).w[7 as core::ffi::c_int as usize];
+    let mut x1: aes_word_t = (*batch).w[6 as core::ffi::c_int as usize];
+    let mut x2: aes_word_t = (*batch).w[5 as core::ffi::c_int as usize];
+    let mut x3: aes_word_t = (*batch).w[4 as core::ffi::c_int as usize];
+    let mut x4: aes_word_t = (*batch).w[3 as core::ffi::c_int as usize];
+    let mut x5: aes_word_t = (*batch).w[2 as core::ffi::c_int as usize];
+    let mut x6: aes_word_t = (*batch).w[1 as core::ffi::c_int as usize];
+    let mut x7: aes_word_t = (*batch).w[0 as core::ffi::c_int as usize];
+    let mut y14: aes_word_t = aes_nohw_xor(x3, x5);
+    let mut y13: aes_word_t = aes_nohw_xor(x0, x6);
+    let mut y9: aes_word_t = aes_nohw_xor(x0, x3);
+    let mut y8: aes_word_t = aes_nohw_xor(x0, x5);
+    let mut t0: aes_word_t = aes_nohw_xor(x1, x2);
+    let mut y1: aes_word_t = aes_nohw_xor(t0, x7);
+    let mut y4: aes_word_t = aes_nohw_xor(y1, x3);
+    let mut y12: aes_word_t = aes_nohw_xor(y13, y14);
+    let mut y2: aes_word_t = aes_nohw_xor(y1, x0);
+    let mut y5: aes_word_t = aes_nohw_xor(y1, x6);
+    let mut y3: aes_word_t = aes_nohw_xor(y5, y8);
+    let mut t1: aes_word_t = aes_nohw_xor(x4, y12);
+    let mut y15: aes_word_t = aes_nohw_xor(t1, x5);
+    let mut y20: aes_word_t = aes_nohw_xor(t1, x1);
+    let mut y6: aes_word_t = aes_nohw_xor(y15, x7);
+    let mut y10: aes_word_t = aes_nohw_xor(y15, t0);
+    let mut y11: aes_word_t = aes_nohw_xor(y20, y9);
+    let mut y7: aes_word_t = aes_nohw_xor(x7, y11);
+    let mut y17: aes_word_t = aes_nohw_xor(y10, y11);
+    let mut y19: aes_word_t = aes_nohw_xor(y10, y8);
+    let mut y16: aes_word_t = aes_nohw_xor(t0, y11);
+    let mut y21: aes_word_t = aes_nohw_xor(y13, y16);
+    let mut y18: aes_word_t = aes_nohw_xor(x0, y16);
+    let mut t2: aes_word_t = aes_nohw_and(y12, y15);
+    let mut t3: aes_word_t = aes_nohw_and(y3, y6);
+    let mut t4: aes_word_t = aes_nohw_xor(t3, t2);
+    let mut t5: aes_word_t = aes_nohw_and(y4, x7);
+    let mut t6: aes_word_t = aes_nohw_xor(t5, t2);
+    let mut t7: aes_word_t = aes_nohw_and(y13, y16);
+    let mut t8: aes_word_t = aes_nohw_and(y5, y1);
+    let mut t9: aes_word_t = aes_nohw_xor(t8, t7);
+    let mut t10: aes_word_t = aes_nohw_and(y2, y7);
+    let mut t11: aes_word_t = aes_nohw_xor(t10, t7);
+    let mut t12: aes_word_t = aes_nohw_and(y9, y11);
+    let mut t13: aes_word_t = aes_nohw_and(y14, y17);
+    let mut t14: aes_word_t = aes_nohw_xor(t13, t12);
+    let mut t15: aes_word_t = aes_nohw_and(y8, y10);
+    let mut t16: aes_word_t = aes_nohw_xor(t15, t12);
+    let mut t17: aes_word_t = aes_nohw_xor(t4, t14);
+    let mut t18: aes_word_t = aes_nohw_xor(t6, t16);
+    let mut t19: aes_word_t = aes_nohw_xor(t9, t14);
+    let mut t20: aes_word_t = aes_nohw_xor(t11, t16);
+    let mut t21: aes_word_t = aes_nohw_xor(t17, y20);
+    let mut t22: aes_word_t = aes_nohw_xor(t18, y19);
+    let mut t23: aes_word_t = aes_nohw_xor(t19, y21);
+    let mut t24: aes_word_t = aes_nohw_xor(t20, y18);
+    let mut t25: aes_word_t = aes_nohw_xor(t21, t22);
+    let mut t26: aes_word_t = aes_nohw_and(t21, t23);
+    let mut t27: aes_word_t = aes_nohw_xor(t24, t26);
+    let mut t28: aes_word_t = aes_nohw_and(t25, t27);
+    let mut t29: aes_word_t = aes_nohw_xor(t28, t22);
+    let mut t30: aes_word_t = aes_nohw_xor(t23, t24);
+    let mut t31: aes_word_t = aes_nohw_xor(t22, t26);
+    let mut t32: aes_word_t = aes_nohw_and(t31, t30);
+    let mut t33: aes_word_t = aes_nohw_xor(t32, t24);
+    let mut t34: aes_word_t = aes_nohw_xor(t23, t33);
+    let mut t35: aes_word_t = aes_nohw_xor(t27, t33);
+    let mut t36: aes_word_t = aes_nohw_and(t24, t35);
+    let mut t37: aes_word_t = aes_nohw_xor(t36, t34);
+    let mut t38: aes_word_t = aes_nohw_xor(t27, t36);
+    let mut t39: aes_word_t = aes_nohw_and(t29, t38);
+    let mut t40: aes_word_t = aes_nohw_xor(t25, t39);
+    let mut t41: aes_word_t = aes_nohw_xor(t40, t37);
+    let mut t42: aes_word_t = aes_nohw_xor(t29, t33);
+    let mut t43: aes_word_t = aes_nohw_xor(t29, t40);
+    let mut t44: aes_word_t = aes_nohw_xor(t33, t37);
+    let mut t45: aes_word_t = aes_nohw_xor(t42, t41);
+    let mut z0: aes_word_t = aes_nohw_and(t44, y15);
+    let mut z1: aes_word_t = aes_nohw_and(t37, y6);
+    let mut z2: aes_word_t = aes_nohw_and(t33, x7);
+    let mut z3: aes_word_t = aes_nohw_and(t43, y16);
+    let mut z4: aes_word_t = aes_nohw_and(t40, y1);
+    let mut z5: aes_word_t = aes_nohw_and(t29, y7);
+    let mut z6: aes_word_t = aes_nohw_and(t42, y11);
+    let mut z7: aes_word_t = aes_nohw_and(t45, y17);
+    let mut z8: aes_word_t = aes_nohw_and(t41, y10);
+    let mut z9: aes_word_t = aes_nohw_and(t44, y12);
+    let mut z10: aes_word_t = aes_nohw_and(t37, y3);
+    let mut z11: aes_word_t = aes_nohw_and(t33, y4);
+    let mut z12: aes_word_t = aes_nohw_and(t43, y13);
+    let mut z13: aes_word_t = aes_nohw_and(t40, y5);
+    let mut z14: aes_word_t = aes_nohw_and(t29, y2);
+    let mut z15: aes_word_t = aes_nohw_and(t42, y9);
+    let mut z16: aes_word_t = aes_nohw_and(t45, y14);
+    let mut z17: aes_word_t = aes_nohw_and(t41, y8);
+    let mut t46: aes_word_t = aes_nohw_xor(z15, z16);
+    let mut t47: aes_word_t = aes_nohw_xor(z10, z11);
+    let mut t48: aes_word_t = aes_nohw_xor(z5, z13);
+    let mut t49: aes_word_t = aes_nohw_xor(z9, z10);
+    let mut t50: aes_word_t = aes_nohw_xor(z2, z12);
+    let mut t51: aes_word_t = aes_nohw_xor(z2, z5);
+    let mut t52: aes_word_t = aes_nohw_xor(z7, z8);
+    let mut t53: aes_word_t = aes_nohw_xor(z0, z3);
+    let mut t54: aes_word_t = aes_nohw_xor(z6, z7);
+    let mut t55: aes_word_t = aes_nohw_xor(z16, z17);
+    let mut t56: aes_word_t = aes_nohw_xor(z12, t48);
+    let mut t57: aes_word_t = aes_nohw_xor(t50, t53);
+    let mut t58: aes_word_t = aes_nohw_xor(z4, t46);
+    let mut t59: aes_word_t = aes_nohw_xor(z3, t54);
+    let mut t60: aes_word_t = aes_nohw_xor(t46, t57);
+    let mut t61: aes_word_t = aes_nohw_xor(z14, t57);
+    let mut t62: aes_word_t = aes_nohw_xor(t52, t58);
+    let mut t63: aes_word_t = aes_nohw_xor(t49, t58);
+    let mut t64: aes_word_t = aes_nohw_xor(z4, t59);
+    let mut t65: aes_word_t = aes_nohw_xor(t61, t62);
+    let mut t66: aes_word_t = aes_nohw_xor(z1, t63);
+    let mut s0: aes_word_t = aes_nohw_xor(t59, t63);
+    let mut s6: aes_word_t = aes_nohw_xor(t56, aes_nohw_not(t62));
+    let mut s7: aes_word_t = aes_nohw_xor(t48, aes_nohw_not(t60));
+    let mut t67: aes_word_t = aes_nohw_xor(t64, t65);
+    let mut s3: aes_word_t = aes_nohw_xor(t53, t66);
+    let mut s4: aes_word_t = aes_nohw_xor(t51, t66);
+    let mut s5: aes_word_t = aes_nohw_xor(t47, t65);
+    let mut s1: aes_word_t = aes_nohw_xor(t64, aes_nohw_not(s3));
+    let mut s2: aes_word_t = aes_nohw_xor(t55, aes_nohw_not(t67));
     (*batch).w[0 as core::ffi::c_int as usize] = s7;
     (*batch).w[1 as core::ffi::c_int as usize] = s6;
     (*batch).w[2 as core::ffi::c_int as usize] = s5;
@@ -526,7 +539,7 @@ unsafe extern "C" fn aes_nohw_sub_bytes(mut batch: *mut AES_NOHW_BATCH) {
 unsafe extern "C" fn aes_nohw_shift_rows(mut batch: *mut AES_NOHW_BATCH) {
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < 8 as core::ffi::c_int as core::ffi::c_uint {
-        let row0: aes_word_t = aes_nohw_and(
+        let mut row0: aes_word_t = aes_nohw_and(
             (*batch).w[i as usize],
             0x3030303 as core::ffi::c_int as aes_word_t,
         );
@@ -578,40 +591,40 @@ unsafe extern "C" fn aes_nohw_shift_rows(mut batch: *mut AES_NOHW_BATCH) {
     }
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_rotate_rows_down(v: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_rotate_rows_down(mut v: aes_word_t) -> aes_word_t {
     return v >> 2 as core::ffi::c_int & 0x3f3f3f3f as core::ffi::c_int as core::ffi::c_uint
         | v << 6 as core::ffi::c_int & 0xc0c0c0c0 as core::ffi::c_uint;
 }
 #[inline]
-unsafe extern "C" fn aes_nohw_rotate_rows_twice(v: aes_word_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_rotate_rows_twice(mut v: aes_word_t) -> aes_word_t {
     return v >> 4 as core::ffi::c_int & 0xf0f0f0f as core::ffi::c_int as core::ffi::c_uint
         | v << 4 as core::ffi::c_int & 0xf0f0f0f0 as core::ffi::c_uint;
 }
 unsafe extern "C" fn aes_nohw_mix_columns(mut batch: *mut AES_NOHW_BATCH) {
-    let a0: aes_word_t = (*batch).w[0 as core::ffi::c_int as usize];
-    let a1: aes_word_t = (*batch).w[1 as core::ffi::c_int as usize];
-    let a2: aes_word_t = (*batch).w[2 as core::ffi::c_int as usize];
-    let a3: aes_word_t = (*batch).w[3 as core::ffi::c_int as usize];
-    let a4: aes_word_t = (*batch).w[4 as core::ffi::c_int as usize];
-    let a5: aes_word_t = (*batch).w[5 as core::ffi::c_int as usize];
-    let a6: aes_word_t = (*batch).w[6 as core::ffi::c_int as usize];
-    let a7: aes_word_t = (*batch).w[7 as core::ffi::c_int as usize];
-    let r0: aes_word_t = aes_nohw_rotate_rows_down(a0);
-    let a0_r0: aes_word_t = aes_nohw_xor(a0, r0);
-    let r1: aes_word_t = aes_nohw_rotate_rows_down(a1);
-    let a1_r1: aes_word_t = aes_nohw_xor(a1, r1);
-    let r2: aes_word_t = aes_nohw_rotate_rows_down(a2);
-    let a2_r2: aes_word_t = aes_nohw_xor(a2, r2);
-    let r3: aes_word_t = aes_nohw_rotate_rows_down(a3);
-    let a3_r3: aes_word_t = aes_nohw_xor(a3, r3);
-    let r4: aes_word_t = aes_nohw_rotate_rows_down(a4);
-    let a4_r4: aes_word_t = aes_nohw_xor(a4, r4);
-    let r5: aes_word_t = aes_nohw_rotate_rows_down(a5);
-    let a5_r5: aes_word_t = aes_nohw_xor(a5, r5);
-    let r6: aes_word_t = aes_nohw_rotate_rows_down(a6);
-    let a6_r6: aes_word_t = aes_nohw_xor(a6, r6);
-    let r7: aes_word_t = aes_nohw_rotate_rows_down(a7);
-    let a7_r7: aes_word_t = aes_nohw_xor(a7, r7);
+    let mut a0: aes_word_t = (*batch).w[0 as core::ffi::c_int as usize];
+    let mut a1: aes_word_t = (*batch).w[1 as core::ffi::c_int as usize];
+    let mut a2: aes_word_t = (*batch).w[2 as core::ffi::c_int as usize];
+    let mut a3: aes_word_t = (*batch).w[3 as core::ffi::c_int as usize];
+    let mut a4: aes_word_t = (*batch).w[4 as core::ffi::c_int as usize];
+    let mut a5: aes_word_t = (*batch).w[5 as core::ffi::c_int as usize];
+    let mut a6: aes_word_t = (*batch).w[6 as core::ffi::c_int as usize];
+    let mut a7: aes_word_t = (*batch).w[7 as core::ffi::c_int as usize];
+    let mut r0: aes_word_t = aes_nohw_rotate_rows_down(a0);
+    let mut a0_r0: aes_word_t = aes_nohw_xor(a0, r0);
+    let mut r1: aes_word_t = aes_nohw_rotate_rows_down(a1);
+    let mut a1_r1: aes_word_t = aes_nohw_xor(a1, r1);
+    let mut r2: aes_word_t = aes_nohw_rotate_rows_down(a2);
+    let mut a2_r2: aes_word_t = aes_nohw_xor(a2, r2);
+    let mut r3: aes_word_t = aes_nohw_rotate_rows_down(a3);
+    let mut a3_r3: aes_word_t = aes_nohw_xor(a3, r3);
+    let mut r4: aes_word_t = aes_nohw_rotate_rows_down(a4);
+    let mut a4_r4: aes_word_t = aes_nohw_xor(a4, r4);
+    let mut r5: aes_word_t = aes_nohw_rotate_rows_down(a5);
+    let mut a5_r5: aes_word_t = aes_nohw_xor(a5, r5);
+    let mut r6: aes_word_t = aes_nohw_rotate_rows_down(a6);
+    let mut a6_r6: aes_word_t = aes_nohw_xor(a6, r6);
+    let mut r7: aes_word_t = aes_nohw_rotate_rows_down(a7);
+    let mut a7_r7: aes_word_t = aes_nohw_xor(a7, r7);
     (*batch).w[0 as core::ffi::c_int as usize] =
         aes_nohw_xor(aes_nohw_xor(a7_r7, r0), aes_nohw_rotate_rows_twice(a0_r0));
     (*batch).w[1 as core::ffi::c_int as usize] = aes_nohw_xor(
@@ -636,9 +649,9 @@ unsafe extern "C" fn aes_nohw_mix_columns(mut batch: *mut AES_NOHW_BATCH) {
         aes_nohw_xor(aes_nohw_xor(a6_r6, r7), aes_nohw_rotate_rows_twice(a7_r7));
 }
 unsafe extern "C" fn aes_nohw_encrypt_batch(
-    key: *const AES_NOHW_SCHEDULE,
-    num_rounds: size_t,
-    batch: *mut AES_NOHW_BATCH,
+    mut key: *const AES_NOHW_SCHEDULE,
+    mut num_rounds: size_t,
+    mut batch: *mut AES_NOHW_BATCH,
 ) {
     aes_nohw_add_round_key(
         batch,
@@ -659,15 +672,15 @@ unsafe extern "C" fn aes_nohw_encrypt_batch(
     aes_nohw_add_round_key(batch, &*((*key).keys).as_ptr().offset(num_rounds as isize));
 }
 unsafe extern "C" fn aes_nohw_expand_round_keys(
-    out: *mut AES_NOHW_SCHEDULE,
-    key: *const AES_KEY,
+    mut out: *mut AES_NOHW_SCHEDULE,
+    mut key: *const AES_KEY,
 ) {
-    let mut i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
+    let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i <= (*key).rounds {
         let mut j: size_t = 0 as core::ffi::c_int as size_t;
         while j < 2 as core::ffi::c_int as core::ffi::c_uint {
             let mut tmp: [aes_word_t; 4] = [0; 4];
-            let _ = GFp_memcpy(
+            OPENSSL_memcpy(
                 tmp.as_mut_ptr() as *mut core::ffi::c_void,
                 ((*key).rd_key)
                     .as_ptr()
@@ -699,15 +712,15 @@ static mut aes_nohw_rcon: [uint8_t; 10] = [
     0x36 as core::ffi::c_int as uint8_t,
 ];
 #[inline]
-unsafe extern "C" fn aes_nohw_rcon_slice(mut rcon: uint8_t, i: size_t) -> aes_word_t {
+unsafe extern "C" fn aes_nohw_rcon_slice(mut rcon: uint8_t, mut i: size_t) -> aes_word_t {
     rcon = (rcon as core::ffi::c_int >> i.wrapping_mul(2 as core::ffi::c_int as core::ffi::c_uint)
         & ((1 as core::ffi::c_int) << 2 as core::ffi::c_int) - 1 as core::ffi::c_int)
         as uint8_t;
     return rcon as aes_word_t;
 }
-unsafe extern "C" fn aes_nohw_sub_block(out: *mut aes_word_t, in_0: *const aes_word_t) {
+unsafe extern "C" fn aes_nohw_sub_block(mut out: *mut aes_word_t, mut in_0: *const aes_word_t) {
     let mut batch: AES_NOHW_BATCH = AES_NOHW_BATCH { w: [0; 8] };
-    let _ = GFp_memset(
+    OPENSSL_memset(
         &mut batch as *mut AES_NOHW_BATCH as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
         core::mem::size_of::<AES_NOHW_BATCH>() as u32,
@@ -718,11 +731,11 @@ unsafe extern "C" fn aes_nohw_sub_block(out: *mut aes_word_t, in_0: *const aes_w
     aes_nohw_transpose(&mut batch);
     aes_nohw_batch_get(&mut batch, out, 0 as core::ffi::c_int as size_t);
 }
-unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, in_0: *const uint8_t) {
+unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, mut in_0: *const uint8_t) {
     (*key).rounds = 10 as core::ffi::c_int as core::ffi::c_uint;
     let mut block: [aes_word_t; 4] = [0; 4];
     aes_nohw_compact_block(block.as_mut_ptr(), in_0);
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         ((*key).rd_key).as_mut_ptr() as *mut core::ffi::c_void,
         block.as_mut_ptr() as *const core::ffi::c_void,
         16 as core::ffi::c_int as size_t,
@@ -731,7 +744,7 @@ unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, in_0: *const 
     while i <= 10 as core::ffi::c_int as core::ffi::c_uint {
         let mut sub: [aes_word_t; 4] = [0; 4];
         aes_nohw_sub_block(sub.as_mut_ptr(), block.as_mut_ptr() as *const aes_word_t);
-        let rcon: uint8_t =
+        let mut rcon: uint8_t =
             aes_nohw_rcon[i.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint) as usize];
         let mut j: size_t = 0 as core::ffi::c_int as size_t;
         while j
@@ -746,7 +759,7 @@ unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, in_0: *const 
                     12 as core::ffi::c_int as aes_word_t,
                 ),
             );
-            let v: aes_word_t = block[j as usize];
+            let mut v: aes_word_t = block[j as usize];
             block[j as usize] = aes_nohw_xor(
                 block[j as usize],
                 aes_nohw_shift_left(v, 4 as core::ffi::c_int as aes_word_t),
@@ -761,7 +774,7 @@ unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, in_0: *const 
             );
             j = j.wrapping_add(1);
         }
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             ((*key).rd_key)
                 .as_mut_ptr()
                 .offset((4 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i) as isize)
@@ -772,12 +785,12 @@ unsafe extern "C" fn aes_nohw_setup_key_128(mut key: *mut AES_KEY, in_0: *const 
         i = i.wrapping_add(1);
     }
 }
-unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const uint8_t) {
+unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, mut in_0: *const uint8_t) {
     (*key).rounds = 14 as core::ffi::c_int as core::ffi::c_uint;
     let mut block1: [aes_word_t; 4] = [0; 4];
     let mut block2: [aes_word_t; 4] = [0; 4];
     aes_nohw_compact_block(block1.as_mut_ptr(), in_0);
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         ((*key).rd_key).as_mut_ptr() as *mut core::ffi::c_void,
         block1.as_mut_ptr() as *const core::ffi::c_void,
         16 as core::ffi::c_int as size_t,
@@ -786,7 +799,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
         block2.as_mut_ptr(),
         in_0.offset(16 as core::ffi::c_int as isize),
     );
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         ((*key).rd_key)
             .as_mut_ptr()
             .offset(4 as core::ffi::c_int as isize) as *mut core::ffi::c_void,
@@ -797,7 +810,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
     while i <= 14 as core::ffi::c_int as core::ffi::c_uint {
         let mut sub: [aes_word_t; 4] = [0; 4];
         aes_nohw_sub_block(sub.as_mut_ptr(), block2.as_mut_ptr() as *const aes_word_t);
-        let rcon: uint8_t = aes_nohw_rcon[i
+        let mut rcon: uint8_t = aes_nohw_rcon[i
             .wrapping_div(2 as core::ffi::c_int as core::ffi::c_uint)
             .wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint)
             as usize];
@@ -814,7 +827,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
                     12 as core::ffi::c_int as aes_word_t,
                 ),
             );
-            let v: aes_word_t = block1[j as usize];
+            let mut v: aes_word_t = block1[j as usize];
             block1[j as usize] = aes_nohw_xor(
                 block1[j as usize],
                 aes_nohw_shift_left(v, 4 as core::ffi::c_int as aes_word_t),
@@ -829,7 +842,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
             );
             j = j.wrapping_add(1);
         }
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             ((*key).rd_key)
                 .as_mut_ptr()
                 .offset((4 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i) as isize)
@@ -850,7 +863,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
                 block2[j_0 as usize],
                 aes_nohw_shift_right(sub[j_0 as usize], 12 as core::ffi::c_int as aes_word_t),
             );
-            let v_0: aes_word_t = block2[j_0 as usize];
+            let mut v_0: aes_word_t = block2[j_0 as usize];
             block2[j_0 as usize] = aes_nohw_xor(
                 block2[j_0 as usize],
                 aes_nohw_shift_left(v_0, 4 as core::ffi::c_int as aes_word_t),
@@ -865,7 +878,7 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
             );
             j_0 = j_0.wrapping_add(1);
         }
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             ((*key).rd_key).as_mut_ptr().offset(
                 (4 as core::ffi::c_int as core::ffi::c_uint)
                     .wrapping_mul(i.wrapping_add(1 as core::ffi::c_int as core::ffi::c_uint))
@@ -879,10 +892,10 @@ unsafe extern "C" fn aes_nohw_setup_key_256(mut key: *mut AES_KEY, in_0: *const 
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_aes_nohw_set_encrypt_key(
-    key: *const uint8_t,
-    bits: core::ffi::c_uint,
-    aeskey: *mut AES_KEY,
+pub unsafe extern "C" fn aes_nohw_set_encrypt_key(
+    mut key: *const uint8_t,
+    mut bits: core::ffi::c_uint,
+    mut aeskey: *mut AES_KEY,
 ) -> core::ffi::c_int {
     match bits {
         128 => {
@@ -898,10 +911,10 @@ pub unsafe extern "C" fn GFp_aes_nohw_set_encrypt_key(
     return 1 as core::ffi::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_aes_nohw_encrypt(
-    in_0: *const uint8_t,
-    out: *mut uint8_t,
-    key: *const AES_KEY,
+pub unsafe extern "C" fn aes_nohw_encrypt(
+    mut in_0: *const uint8_t,
+    mut out: *mut uint8_t,
+    mut key: *const AES_KEY,
 ) {
     let mut sched: AES_NOHW_SCHEDULE = AES_NOHW_SCHEDULE {
         keys: [AES_NOHW_BATCH { w: [0; 8] }; 15],
@@ -914,26 +927,26 @@ pub unsafe extern "C" fn GFp_aes_nohw_encrypt(
 }
 #[inline]
 unsafe extern "C" fn aes_nohw_xor_block(
-    out: *mut uint8_t,
-    a: *const uint8_t,
-    b: *const uint8_t,
+    mut out: *mut uint8_t,
+    mut a: *const uint8_t,
+    mut b: *const uint8_t,
 ) {
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < 16 as core::ffi::c_int as core::ffi::c_uint {
         let mut x: aes_word_t = 0;
         let mut y: aes_word_t = 0;
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             &mut x as *mut aes_word_t as *mut core::ffi::c_void,
             a.offset(i as isize) as *const core::ffi::c_void,
             core::mem::size_of::<aes_word_t>() as u32,
         );
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             &mut y as *mut aes_word_t as *mut core::ffi::c_void,
             b.offset(i as isize) as *const core::ffi::c_void,
             core::mem::size_of::<aes_word_t>() as u32,
         );
         x = aes_nohw_xor(x, y);
-        let _ = GFp_memcpy(
+        OPENSSL_memcpy(
             out.offset(i as isize) as *mut core::ffi::c_void,
             &mut x as *mut aes_word_t as *const core::ffi::c_void,
             core::mem::size_of::<aes_word_t>() as u32,
@@ -943,12 +956,12 @@ unsafe extern "C" fn aes_nohw_xor_block(
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_aes_nohw_ctr32_encrypt_blocks(
+pub unsafe extern "C" fn aes_nohw_ctr32_encrypt_blocks(
     mut in_0: *const uint8_t,
     mut out: *mut uint8_t,
     mut blocks: size_t,
-    key: *const AES_KEY,
-    ivec: *const uint8_t,
+    mut key: *const AES_KEY,
+    mut ivec: *const uint8_t,
 ) {
     if blocks == 0 as core::ffi::c_int as core::ffi::c_uint {
         return;
@@ -957,13 +970,12 @@ pub unsafe extern "C" fn GFp_aes_nohw_ctr32_encrypt_blocks(
         keys: [AES_NOHW_BATCH { w: [0; 8] }; 15],
     };
     aes_nohw_expand_round_keys(&mut sched, key);
-    let mut ivs: C2RustUnnamed = C2RustUnnamed { u32_0: [0; 8] };
-    let mut enc_ivs: C2RustUnnamed = C2RustUnnamed { u32_0: [0; 8] };
+    let mut ivs: [uint8_t; 32] = [0; 32];
+    let mut enc_ivs: [uint8_t; 32] = [0; 32];
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < 2 as core::ffi::c_int as core::ffi::c_uint {
-        let _ = GFp_memcpy(
-            (ivs.u8_0)
-                .as_mut_ptr()
+        OPENSSL_memcpy(
+            ivs.as_mut_ptr()
                 .offset((16 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i) as isize)
                 as *mut core::ffi::c_void,
             ivec as *const core::ffi::c_void,
@@ -971,25 +983,32 @@ pub unsafe extern "C" fn GFp_aes_nohw_ctr32_encrypt_blocks(
         );
         i = i.wrapping_add(1);
     }
-    let mut ctr: uint32_t = CRYPTO_bswap4(ivs.u32_0[3 as core::ffi::c_int as usize]);
+    let mut ctr: uint32_t = CRYPTO_load_u32_be(
+        ivs.as_mut_ptr().offset(12 as core::ffi::c_int as isize) as *const core::ffi::c_void,
+    );
     loop {
-        let mut i_0: uint32_t = 0 as core::ffi::c_int as uint32_t;
+        let mut i_0: size_t = 0 as core::ffi::c_int as size_t;
         while i_0 < 2 as core::ffi::c_int as core::ffi::c_uint {
-            ivs.u32_0[(4 as core::ffi::c_int as core::ffi::c_uint)
-                .wrapping_mul(i_0)
-                .wrapping_add(3 as core::ffi::c_int as core::ffi::c_uint)
-                as usize] = CRYPTO_bswap4(ctr.wrapping_add(i_0));
+            CRYPTO_store_u32_be(
+                ivs.as_mut_ptr()
+                    .offset(
+                        (16 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i_0) as isize,
+                    )
+                    .offset(12 as core::ffi::c_int as isize)
+                    as *mut core::ffi::c_void,
+                ctr.wrapping_add(i_0),
+            );
             i_0 = i_0.wrapping_add(1);
         }
-        let todo: size_t = if blocks >= 2 as core::ffi::c_int as core::ffi::c_uint {
+        let mut todo: size_t = if blocks >= 2 as core::ffi::c_int as core::ffi::c_uint {
             2 as core::ffi::c_int as core::ffi::c_uint
         } else {
             blocks
         };
         let mut batch: AES_NOHW_BATCH = AES_NOHW_BATCH { w: [0; 8] };
-        aes_nohw_to_batch(&mut batch, (ivs.u8_0).as_mut_ptr(), todo);
+        aes_nohw_to_batch(&mut batch, ivs.as_mut_ptr(), todo);
         aes_nohw_encrypt_batch(&mut sched, (*key).rounds, &mut batch);
-        aes_nohw_from_batch((enc_ivs.u8_0).as_mut_ptr(), todo, &mut batch);
+        aes_nohw_from_batch(enc_ivs.as_mut_ptr(), todo, &mut batch);
         let mut i_1: size_t = 0 as core::ffi::c_int as size_t;
         while i_1 < todo {
             aes_nohw_xor_block(
@@ -999,7 +1018,7 @@ pub unsafe extern "C" fn GFp_aes_nohw_ctr32_encrypt_blocks(
                 in_0.offset(
                     (16 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i_1) as isize,
                 ),
-                (enc_ivs.u8_0).as_mut_ptr().offset(
+                enc_ivs.as_mut_ptr().offset(
                     (16 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(i_1) as isize,
                 ) as *const uint8_t,
             );

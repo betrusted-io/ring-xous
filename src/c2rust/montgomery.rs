@@ -9,7 +9,6 @@ extern "C" {
         __line: core::ffi::c_uint,
         __function: *const core::ffi::c_char,
     ) -> !;
-    fn GFp_limbs_mul_add_limb(r: *mut Limb, a: *const Limb, b: Limb, num_limbs: size_t) -> Limb;
     fn limbs_mul_add_limb(r: *mut Limb, a: *const Limb, b: Limb, num_limbs: size_t) -> Limb;
 }
 pub type size_t = core::ffi::c_uint;
@@ -17,33 +16,34 @@ pub type __uint32_t = core::ffi::c_uint;
 pub type __uint64_t = u64;
 pub type uint32_t = __uint32_t;
 pub type uint64_t = __uint64_t;
-pub type crypto_word = uint32_t;
-pub type BN_ULONG = crypto_word;
-pub type Limb = crypto_word;
+pub type crypto_word_t = uint32_t;
+pub type BN_ULONG = crypto_word_t;
+pub type Limb = crypto_word_t;
 pub type Carry = Limb;
 pub type DoubleLimb = uint64_t;
 #[inline]
-unsafe extern "C" fn value_barrier_w(a: crypto_word) -> crypto_word {
+unsafe extern "C" fn value_barrier_w(mut a: crypto_word_t) -> crypto_word_t {
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
     return a;
 }
 #[inline]
 unsafe extern "C" fn constant_time_select_w(
-    mask: crypto_word,
-    a: crypto_word,
-    b: crypto_word,
-) -> crypto_word {
-    return value_barrier_w(mask) & a | value_barrier_w(!mask) & b;
+    mut mask: crypto_word_t,
+    mut a: crypto_word_t,
+    mut b: crypto_word_t,
+) -> crypto_word_t {
+    mask = value_barrier_w(mask);
+    return mask & a | !mask & b;
 }
 #[inline]
 unsafe extern "C" fn limb_sbb(
-    r: *mut Limb,
-    a: Limb,
-    b: Limb,
-    borrow_in: Carry,
+    mut r: *mut Limb,
+    mut a: Limb,
+    mut b: Limb,
+    mut borrow_in: Carry,
 ) -> Carry {
-    let ret: Carry;
-    let x: DoubleLimb = (a as DoubleLimb)
+    let mut ret: Carry = 0;
+    let mut x: DoubleLimb = (a as DoubleLimb)
         .wrapping_sub(b as u64)
         .wrapping_sub(borrow_in as u64);
     *r = x as Limb;
@@ -51,19 +51,19 @@ unsafe extern "C" fn limb_sbb(
     return ret;
 }
 #[inline]
-unsafe extern "C" fn limb_sub(r: *mut Limb, a: Limb, b: Limb) -> Carry {
-    let ret: Carry;
-    let x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
+unsafe extern "C" fn limb_sub(mut r: *mut Limb, mut a: Limb, mut b: Limb) -> Carry {
+    let mut ret: Carry = 0;
+    let mut x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
     *r = x as Limb;
     ret = (x >> 32 as core::ffi::c_uint & 1 as core::ffi::c_int as u64) as Carry;
     return ret;
 }
 #[inline]
 unsafe extern "C" fn limbs_sub(
-    r: *mut Limb,
-    a: *const Limb,
-    b: *const Limb,
-    num_limbs: size_t,
+    mut r: *mut Limb,
+    mut a: *const Limb,
+    mut b: *const Limb,
+    mut num_limbs: size_t,
 ) -> Carry {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -97,13 +97,13 @@ unsafe extern "C" fn limbs_sub(
 }
 #[no_mangle]
 pub unsafe extern "C" fn bn_from_montgomery_in_place(
-    r: *mut BN_ULONG,
-    num_r: size_t,
+    mut r: *mut BN_ULONG,
+    mut num_r: size_t,
     mut a: *mut BN_ULONG,
-    num_a: size_t,
-    n: *const BN_ULONG,
-    num_n: size_t,
-    n0_: *const BN_ULONG,
+    mut num_a: size_t,
+    mut n: *const BN_ULONG,
+    mut num_n: size_t,
+    mut n0_: *const BN_ULONG,
 ) -> core::ffi::c_int {
     if num_n == 0 as core::ffi::c_int as core::ffi::c_uint
         || num_r != num_n
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn bn_from_montgomery_in_place(
     {
         return 0 as core::ffi::c_int;
     }
-    let n0: BN_ULONG = *n0_.offset(0 as core::ffi::c_int as isize);
+    let mut n0: BN_ULONG = *n0_.offset(0 as core::ffi::c_int as isize);
     let mut carry: BN_ULONG = 0 as core::ffi::c_int as BN_ULONG;
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < num_n {
@@ -144,61 +144,13 @@ pub unsafe extern "C" fn bn_from_montgomery_in_place(
     return 1 as core::ffi::c_int;
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_bn_from_montgomery_in_place(
-    r: *mut BN_ULONG,
-    num_r: size_t,
-    mut a: *mut BN_ULONG,
-    num_a: size_t,
-    n: *const BN_ULONG,
-    num_n: size_t,
-    n0_: *const BN_ULONG,
-) -> core::ffi::c_int {
-    if num_n == 0 as core::ffi::c_int as core::ffi::c_uint
-        || num_r != num_n
-        || num_a != (2 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(num_n)
-    {
-        return 0 as core::ffi::c_int;
-    }
-    let n0: BN_ULONG = *n0_.offset(0 as core::ffi::c_int as isize);
-    let mut carry: BN_ULONG = 0 as core::ffi::c_int as BN_ULONG;
-    let mut i: size_t = 0 as core::ffi::c_int as size_t;
-    while i < num_n {
-        let mut v: BN_ULONG = GFp_limbs_mul_add_limb(
-            a.offset(i as isize),
-            n,
-            (*a.offset(i as isize)).wrapping_mul(n0),
-            num_n,
-        );
-        v = (v as core::ffi::c_uint)
-            .wrapping_add(carry.wrapping_add(*a.offset(i.wrapping_add(num_n) as isize)))
-            as BN_ULONG as BN_ULONG;
-        carry |= (v != *a.offset(i.wrapping_add(num_n) as isize)) as core::ffi::c_int
-            as core::ffi::c_uint;
-        carry &= (v <= *a.offset(i.wrapping_add(num_n) as isize)) as core::ffi::c_int
-            as core::ffi::c_uint;
-        *a.offset(i.wrapping_add(num_n) as isize) = v;
-        i = i.wrapping_add(1);
-    }
-    a = a.offset(num_n as isize);
-    let mut v_0: BN_ULONG = (limbs_sub(r, a as *const Limb, n, num_n)).wrapping_sub(carry);
-    v_0 = (0 as core::ffi::c_uint).wrapping_sub(v_0);
-    let mut i_0: size_t = 0 as core::ffi::c_int as size_t;
-    while i_0 < num_n {
-        *r.offset(i_0 as isize) =
-            constant_time_select_w(v_0, *a.offset(i_0 as isize), *r.offset(i_0 as isize));
-        *a.offset(i_0 as isize) = 0 as core::ffi::c_int as BN_ULONG;
-        i_0 = i_0.wrapping_add(1);
-    }
-    return 1 as core::ffi::c_int;
-}
-#[no_mangle]
 pub unsafe extern "C" fn bn_mul_mont(
-    rp: *mut BN_ULONG,
-    ap: *const BN_ULONG,
-    bp: *const BN_ULONG,
-    np: *const BN_ULONG,
-    n0: *const BN_ULONG,
-    num: size_t,
+    mut rp: *mut BN_ULONG,
+    mut ap: *const BN_ULONG,
+    mut bp: *const BN_ULONG,
+    mut np: *const BN_ULONG,
+    mut n0: *const BN_ULONG,
+    mut num: size_t,
 ) {
     let vla = (2 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(num) as usize;
     let mut tmp: alloc::vec::Vec<Limb> = alloc::vec::from_elem(0, vla);

@@ -15,14 +15,14 @@ pub type __uint8_t = core::ffi::c_uchar;
 pub type __uint32_t = core::ffi::c_uint;
 pub type uint8_t = __uint8_t;
 pub type uint32_t = __uint32_t;
-pub type crypto_word = uint32_t;
-pub type Limb = crypto_word;
+pub type crypto_word_t = uint32_t;
+pub type Limb = crypto_word_t;
 #[no_mangle]
 pub unsafe extern "C" fn little_endian_bytes_from_scalar(
-    str: *mut uint8_t,
-    str_len: size_t,
-    scalar: *const Limb,
-    num_limbs: size_t,
+    mut str: *mut uint8_t,
+    mut str_len: size_t,
+    mut scalar: *const Limb,
+    mut num_limbs: size_t,
 ) {
     if str_len
         == num_limbs
@@ -32,7 +32,7 @@ pub unsafe extern "C" fn little_endian_bytes_from_scalar(
     } else {
         __assert_fail(
             b"str_len == (num_limbs * sizeof(Limb)) + 1\0" as *const u8 as *const core::ffi::c_char,
-            b"crypto/fipsmodule/ec_17/ecp_nistz.c\0" as *const u8 as *const core::ffi::c_char,
+            b"crypto/fipsmodule/ec/ecp_nistz.c\0" as *const u8 as *const core::ffi::c_char,
             31 as core::ffi::c_int as core::ffi::c_uint,
             (*core::mem::transmute::<&[u8; 78], &[core::ffi::c_char; 78]>(
                 b"void little_endian_bytes_from_scalar(uint8_t *, size_t, const Limb *, size_t)\0",
@@ -40,7 +40,7 @@ pub unsafe extern "C" fn little_endian_bytes_from_scalar(
             .as_ptr(),
         );
     }
-    let mut i: size_t;
+    let mut i: size_t = 0;
     i = 0 as core::ffi::c_int as size_t;
     while i < num_limbs.wrapping_mul(core::mem::size_of::<Limb>() as u32) {
         let mut d: Limb =

@@ -781,7 +781,6 @@ fn emit_rerun_if_changed() {
             }
         })
     }
-    */
 }
 
 fn walk_dir(dir: &Path, cb: &impl Fn(&DirEntry)) {

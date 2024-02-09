@@ -40,38 +40,40 @@ pub struct poly1305_state_st {
     pub key: [uint8_t; 16],
 }
 #[inline]
-unsafe extern "C" fn GFp_memcpy(
-    dst: *mut core::ffi::c_void,
-    src: *const core::ffi::c_void,
-    n: size_t,
+unsafe extern "C" fn CRYPTO_store_u32_le(mut out: *mut core::ffi::c_void, mut v: uint32_t) {
+    OPENSSL_memcpy(
+        out,
+        &mut v as *mut uint32_t as *const core::ffi::c_void,
+        core::mem::size_of::<uint32_t>() as u32,
+    );
+}
+#[inline]
+unsafe extern "C" fn CRYPTO_load_u32_le(mut in_0: *const core::ffi::c_void) -> uint32_t {
+    let mut v: uint32_t = 0;
+    OPENSSL_memcpy(
+        &mut v as *mut uint32_t as *mut core::ffi::c_void,
+        in_0,
+        core::mem::size_of::<uint32_t>() as u32,
+    );
+    return v;
+}
+#[inline]
+unsafe extern "C" fn OPENSSL_memcpy(
+    mut dst: *mut core::ffi::c_void,
+    mut src: *const core::ffi::c_void,
+    mut n: size_t,
 ) -> *mut core::ffi::c_void {
     if n == 0 as core::ffi::c_int as core::ffi::c_uint {
         return dst;
     }
     return memcpy(dst, src, n);
 }
-unsafe extern "C" fn U8TO32_LE(m: *const uint8_t) -> uint32_t {
-    let mut r: uint32_t = 0;
-    let _ = GFp_memcpy(
-        &mut r as *mut uint32_t as *mut core::ffi::c_void,
-        m as *const core::ffi::c_void,
-        core::mem::size_of::<uint32_t>() as u32,
-    );
-    return r;
-}
-unsafe extern "C" fn U32TO8_LE(m: *mut uint8_t, mut v: uint32_t) {
-    let _ = GFp_memcpy(
-        m as *mut core::ffi::c_void,
-        &mut v as *mut uint32_t as *const core::ffi::c_void,
-        core::mem::size_of::<uint32_t>() as u32,
-    );
-}
-unsafe extern "C" fn mul32x32_64(a: uint32_t, b: uint32_t) -> uint64_t {
+unsafe extern "C" fn mul32x32_64(mut a: uint32_t, mut b: uint32_t) -> uint64_t {
     return (a as uint64_t).wrapping_mul(b as u64);
 }
 #[inline]
 unsafe extern "C" fn poly1305_aligned_state(
-    state: *mut poly1305_state,
+    mut state: *mut poly1305_state,
 ) -> *mut poly1305_state_st {
     return ((state as uintptr_t).wrapping_add(63 as core::ffi::c_int as core::ffi::c_uint)
         & !(63 as core::ffi::c_int) as core::ffi::c_uint) as *mut poly1305_state_st;
@@ -82,27 +84,33 @@ unsafe extern "C" fn poly1305_update(
     mut len: size_t,
 ) {
     let mut current_block: u64;
-    let mut t0: uint32_t;
-    let mut t1: uint32_t;
-    let mut t2: uint32_t;
-    let mut t3: uint32_t;
+    let mut t0: uint32_t = 0;
+    let mut t1: uint32_t = 0;
+    let mut t2: uint32_t = 0;
+    let mut t3: uint32_t = 0;
     let mut t: [uint64_t; 5] = [0; 5];
-    let mut b: uint32_t;
-    let mut c: uint64_t;
-    let mut j: size_t;
+    let mut b: uint32_t = 0;
+    let mut c: uint64_t = 0;
+    let mut j: size_t = 0;
     let mut mp: [uint8_t; 16] = [0; 16];
     if len < 16 as core::ffi::c_int as core::ffi::c_uint {
-        current_block = 2923024388715992250;
+        current_block = 13995579333348105930;
     } else {
-        current_block = 16701347803359009348;
+        current_block = 17160205090870801376;
     }
     loop {
         match current_block {
-            16701347803359009348 => {
-                t0 = U8TO32_LE(in_0);
-                t1 = U8TO32_LE(in_0.offset(4 as core::ffi::c_int as isize));
-                t2 = U8TO32_LE(in_0.offset(8 as core::ffi::c_int as isize));
-                t3 = U8TO32_LE(in_0.offset(12 as core::ffi::c_int as isize));
+            17160205090870801376 => {
+                t0 = CRYPTO_load_u32_le(in_0 as *const core::ffi::c_void);
+                t1 = CRYPTO_load_u32_le(
+                    in_0.offset(4 as core::ffi::c_int as isize) as *const core::ffi::c_void
+                );
+                t2 = CRYPTO_load_u32_le(
+                    in_0.offset(8 as core::ffi::c_int as isize) as *const core::ffi::c_void
+                );
+                t3 = CRYPTO_load_u32_le(
+                    in_0.offset(12 as core::ffi::c_int as isize) as *const core::ffi::c_void
+                );
                 in_0 = in_0.offset(16 as core::ffi::c_int as isize);
                 len = (len as core::ffi::c_uint)
                     .wrapping_sub(16 as core::ffi::c_int as core::ffi::c_uint)
@@ -152,10 +160,14 @@ unsafe extern "C" fn poly1305_update(
                     j = j.wrapping_add(1);
                 }
                 len = 0 as core::ffi::c_int as size_t;
-                t0 = U8TO32_LE(mp.as_mut_ptr().offset(0 as core::ffi::c_int as isize));
-                t1 = U8TO32_LE(mp.as_mut_ptr().offset(4 as core::ffi::c_int as isize));
-                t2 = U8TO32_LE(mp.as_mut_ptr().offset(8 as core::ffi::c_int as isize));
-                t3 = U8TO32_LE(mp.as_mut_ptr().offset(12 as core::ffi::c_int as isize));
+                t0 = CRYPTO_load_u32_le(mp.as_mut_ptr().offset(0 as core::ffi::c_int as isize)
+                    as *const core::ffi::c_void);
+                t1 = CRYPTO_load_u32_le(mp.as_mut_ptr().offset(4 as core::ffi::c_int as isize)
+                    as *const core::ffi::c_void);
+                t2 = CRYPTO_load_u32_le(mp.as_mut_ptr().offset(8 as core::ffi::c_int as isize)
+                    as *const core::ffi::c_void);
+                t3 = CRYPTO_load_u32_le(mp.as_mut_ptr().offset(12 as core::ffi::c_int as isize)
+                    as *const core::ffi::c_void);
                 let ref mut fresh7 = (*state).h0;
                 *fresh7 = (*fresh7 as core::ffi::c_uint)
                     .wrapping_add(t0 & 0x3ffffff as core::ffi::c_int as core::ffi::c_uint)
@@ -239,26 +251,27 @@ unsafe extern "C" fn poly1305_update(
             .wrapping_add(b.wrapping_mul(5 as core::ffi::c_int as core::ffi::c_uint))
             as uint32_t as uint32_t;
         if len >= 16 as core::ffi::c_int as core::ffi::c_uint {
-            current_block = 16701347803359009348;
+            current_block = 17160205090870801376;
         } else {
-            current_block = 2923024388715992250;
+            current_block = 13995579333348105930;
         }
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_poly1305_init(
-    statep: *mut poly1305_state,
-    key: *const uint8_t,
+pub unsafe extern "C" fn CRYPTO_poly1305_init(
+    mut statep: *mut poly1305_state,
+    mut key: *const uint8_t,
 ) {
     let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
-    let mut t0: uint32_t;
-    let mut t1: uint32_t;
-    let mut t2: uint32_t;
-    let mut t3: uint32_t;
-    t0 = U8TO32_LE(key.offset(0 as core::ffi::c_int as isize));
-    t1 = U8TO32_LE(key.offset(4 as core::ffi::c_int as isize));
-    t2 = U8TO32_LE(key.offset(8 as core::ffi::c_int as isize));
-    t3 = U8TO32_LE(key.offset(12 as core::ffi::c_int as isize));
+    let mut t0: uint32_t = 0;
+    let mut t1: uint32_t = 0;
+    let mut t2: uint32_t = 0;
+    let mut t3: uint32_t = 0;
+    t0 = CRYPTO_load_u32_le(key.offset(0 as core::ffi::c_int as isize) as *const core::ffi::c_void);
+    t1 = CRYPTO_load_u32_le(key.offset(4 as core::ffi::c_int as isize) as *const core::ffi::c_void);
+    t2 = CRYPTO_load_u32_le(key.offset(8 as core::ffi::c_int as isize) as *const core::ffi::c_void);
+    t3 =
+        CRYPTO_load_u32_le(key.offset(12 as core::ffi::c_int as isize) as *const core::ffi::c_void);
     (*state).r0 = t0 & 0x3ffffff as core::ffi::c_int as core::ffi::c_uint;
     t0 >>= 26 as core::ffi::c_int;
     t0 |= t1 << 6 as core::ffi::c_int;
@@ -281,19 +294,22 @@ pub unsafe extern "C" fn GFp_poly1305_init(
     (*state).h3 = 0 as core::ffi::c_int as uint32_t;
     (*state).h4 = 0 as core::ffi::c_int as uint32_t;
     (*state).buf_used = 0 as core::ffi::c_int as size_t;
-    let _ = GFp_memcpy(
+    OPENSSL_memcpy(
         ((*state).key).as_mut_ptr() as *mut core::ffi::c_void,
         key.offset(16 as core::ffi::c_int as isize) as *const core::ffi::c_void,
         core::mem::size_of::<[uint8_t; 16]>() as u32,
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_poly1305_update(
-    statep: *mut poly1305_state,
+pub unsafe extern "C" fn CRYPTO_poly1305_update(
+    mut statep: *mut poly1305_state,
     mut in_0: *const uint8_t,
     mut in_len: size_t,
 ) {
     let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
+    if in_len == 0 as core::ffi::c_int as core::ffi::c_uint {
+        return;
+    }
     if (*state).buf_used != 0 {
         let mut todo: size_t =
             (16 as core::ffi::c_int as core::ffi::c_uint).wrapping_sub((*state).buf_used);
@@ -319,7 +335,7 @@ pub unsafe extern "C" fn GFp_poly1305_update(
         }
     }
     if in_len >= 16 as core::ffi::c_int as core::ffi::c_uint {
-        let todo_0: size_t = in_len & !(0xf as core::ffi::c_int) as core::ffi::c_uint;
+        let mut todo_0: size_t = in_len & !(0xf as core::ffi::c_int) as core::ffi::c_uint;
         poly1305_update(state, in_0, todo_0);
         in_0 = in_0.offset(todo_0 as isize);
         in_len &= 0xf as core::ffi::c_int as core::ffi::c_uint;
@@ -334,22 +350,18 @@ pub unsafe extern "C" fn GFp_poly1305_update(
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn GFp_poly1305_finish(
-    statep: *mut poly1305_state,
-    mac: *mut uint8_t,
+pub unsafe extern "C" fn CRYPTO_poly1305_finish(
+    mut statep: *mut poly1305_state,
+    mut mac: *mut uint8_t,
 ) {
     let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
-    let f0: uint64_t;
-    let mut f1: uint64_t;
-    let mut f2: uint64_t;
-    let mut f3: uint64_t;
-    let mut g0: uint32_t;
-    let mut g1: uint32_t;
-    let mut g2: uint32_t;
-    let mut g3: uint32_t;
-    let g4: uint32_t;
-    let mut b: uint32_t;
-    let nb: uint32_t;
+    let mut g0: uint32_t = 0;
+    let mut g1: uint32_t = 0;
+    let mut g2: uint32_t = 0;
+    let mut g3: uint32_t = 0;
+    let mut g4: uint32_t = 0;
+    let mut b: uint32_t = 0;
+    let mut nb: uint32_t = 0;
     if (*state).buf_used != 0 {
         poly1305_update(state, ((*state).buf).as_mut_ptr(), (*state).buf_used);
     }
@@ -397,47 +409,54 @@ pub unsafe extern "C" fn GFp_poly1305_finish(
     (*state).h2 = (*state).h2 & nb | g2 & b;
     (*state).h3 = (*state).h3 & nb | g3 & b;
     (*state).h4 = (*state).h4 & nb | g4 & b;
-    f0 = (((*state).h0 | (*state).h1 << 26 as core::ffi::c_int) as u64).wrapping_add(U8TO32_LE(
-        &mut *((*state).key)
-            .as_mut_ptr()
-            .offset(0 as core::ffi::c_int as isize),
-    )
-        as uint64_t);
-    f1 = (((*state).h1 >> 6 as core::ffi::c_int | (*state).h2 << 20 as core::ffi::c_int) as u64)
-        .wrapping_add(U8TO32_LE(
+    let mut f0: uint64_t = (((*state).h0 | (*state).h1 << 26 as core::ffi::c_int) as u64)
+        .wrapping_add(CRYPTO_load_u32_le(
             &mut *((*state).key)
                 .as_mut_ptr()
-                .offset(4 as core::ffi::c_int as isize),
+                .offset(0 as core::ffi::c_int as isize) as *mut uint8_t
+                as *const core::ffi::c_void,
         ) as uint64_t);
-    f2 = (((*state).h2 >> 12 as core::ffi::c_int | (*state).h3 << 14 as core::ffi::c_int) as u64)
-        .wrapping_add(U8TO32_LE(
+    let mut f1: uint64_t = (((*state).h1 >> 6 as core::ffi::c_int
+        | (*state).h2 << 20 as core::ffi::c_int) as u64)
+        .wrapping_add(CRYPTO_load_u32_le(
             &mut *((*state).key)
                 .as_mut_ptr()
-                .offset(8 as core::ffi::c_int as isize),
+                .offset(4 as core::ffi::c_int as isize) as *mut uint8_t
+                as *const core::ffi::c_void,
         ) as uint64_t);
-    f3 = (((*state).h3 >> 18 as core::ffi::c_int | (*state).h4 << 8 as core::ffi::c_int) as u64)
-        .wrapping_add(U8TO32_LE(
+    let mut f2: uint64_t = (((*state).h2 >> 12 as core::ffi::c_int
+        | (*state).h3 << 14 as core::ffi::c_int) as u64)
+        .wrapping_add(CRYPTO_load_u32_le(
             &mut *((*state).key)
                 .as_mut_ptr()
-                .offset(12 as core::ffi::c_int as isize),
+                .offset(8 as core::ffi::c_int as isize) as *mut uint8_t
+                as *const core::ffi::c_void,
         ) as uint64_t);
-    U32TO8_LE(
-        &mut *mac.offset(0 as core::ffi::c_int as isize),
+    let mut f3: uint64_t = (((*state).h3 >> 18 as core::ffi::c_int
+        | (*state).h4 << 8 as core::ffi::c_int) as u64)
+        .wrapping_add(CRYPTO_load_u32_le(
+            &mut *((*state).key)
+                .as_mut_ptr()
+                .offset(12 as core::ffi::c_int as isize) as *mut uint8_t
+                as *const core::ffi::c_void,
+        ) as uint64_t);
+    CRYPTO_store_u32_le(
+        &mut *mac.offset(0 as core::ffi::c_int as isize) as *mut uint8_t as *mut core::ffi::c_void,
         f0 as uint32_t,
     );
     f1 = (f1 as u64).wrapping_add(f0 >> 32 as core::ffi::c_int) as uint64_t as uint64_t;
-    U32TO8_LE(
-        &mut *mac.offset(4 as core::ffi::c_int as isize),
+    CRYPTO_store_u32_le(
+        &mut *mac.offset(4 as core::ffi::c_int as isize) as *mut uint8_t as *mut core::ffi::c_void,
         f1 as uint32_t,
     );
     f2 = (f2 as u64).wrapping_add(f1 >> 32 as core::ffi::c_int) as uint64_t as uint64_t;
-    U32TO8_LE(
-        &mut *mac.offset(8 as core::ffi::c_int as isize),
+    CRYPTO_store_u32_le(
+        &mut *mac.offset(8 as core::ffi::c_int as isize) as *mut uint8_t as *mut core::ffi::c_void,
         f2 as uint32_t,
     );
     f3 = (f3 as u64).wrapping_add(f2 >> 32 as core::ffi::c_int) as uint64_t as uint64_t;
-    U32TO8_LE(
-        &mut *mac.offset(12 as core::ffi::c_int as isize),
+    CRYPTO_store_u32_le(
+        &mut *mac.offset(12 as core::ffi::c_int as isize) as *mut uint8_t as *mut core::ffi::c_void,
         f3 as uint32_t,
     );
 }

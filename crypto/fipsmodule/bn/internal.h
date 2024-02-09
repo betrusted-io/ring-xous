@@ -183,8 +183,6 @@ OPENSSL_STATIC_ASSERT(sizeof(int) == sizeof(size_t) ||
 void GFp_bn_mul_mont(BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp,
                      const BN_ULONG *np, const BN_ULONG *n0, size_t num);
 void bn_mul_mont(BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp,
-                     const BN_ULONG *np, const BN_ULONG *n0, size_t num);
-void bn_mul_mont(BN_ULONG *rp, const BN_ULONG *ap, const BN_ULONG *bp,
                  const BN_ULONG *np, const BN_ULONG *n0, size_t num);
 
 static inline void bn_umult_lohi(BN_ULONG *low_out, BN_ULONG *high_out,

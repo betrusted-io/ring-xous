@@ -30,11 +30,11 @@ RING_C_FILES = [
     # Other libraries
     "crypto/crypto.c",
     "crypto/curve25519/curve25519.c",
-    "crypto/fipsmodule/ec_17/ecp_nistz.c",
+    "crypto/fipsmodule/ec/ecp_nistz.c",
     # "crypto/fipsmodule/ec/ecp_nistz256.c",
-    "crypto/fipsmodule/ec_17/gfp_p256.c",
-    "crypto/fipsmodule/ec_17/gfp_p384.c",
-    "crypto/fipsmodule/ec_17/p256.c",
+    "crypto/fipsmodule/ec/gfp_p256.c",
+    "crypto/fipsmodule/ec/gfp_p384.c",
+    "crypto/fipsmodule/ec/p256.c",
 ]
 
 
