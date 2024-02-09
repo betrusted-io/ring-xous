@@ -15,7 +15,7 @@
 
 use super::sha2::{ch, maj, Word};
 use crate::c;
-use core::{convert::TryInto, num::Wrapping};
+use core::num::Wrapping;
 
 pub const BLOCK_LEN: usize = 512 / 8;
 pub const CHAINING_LEN: usize = 160 / 8;
@@ -40,7 +40,7 @@ pub(super) extern "C" fn block_data_order(
 ) {
     let state = unsafe { &mut state.as32 };
     let state: &mut State = (&mut state[..CHAINING_WORDS]).try_into().unwrap();
-    let data = data as *const [<W32 as Word>::InputBytes; 16];
+    let data = data.cast::<[<W32 as Word>::InputBytes; 16]>();
     let blocks = unsafe { core::slice::from_raw_parts(data, num) };
     *state = block_data_order_(*state, blocks)
 }
@@ -60,17 +60,13 @@ fn block_data_order_(mut H: State, M: &[[<W32 as Word>::InputBytes; 16]]) -> Sta
         }
 
         // FIPS 180-4 6.1.2 Step 2
-        let a = H[0];
-        let b = H[1];
-        let c = H[2];
-        let d = H[3];
-        let e = H[4];
+        let [a, b, c, d, e] = H;
 
         // FIPS 180-4 6.1.2 Step 3 with constants and functions from FIPS 180-4 {4.1.1, 4.2.1}
-        let (a, b, c, d, e) = step3(a, b, c, d, e, W[ 0..20].try_into().unwrap(), Wrapping(0x5a827999), ch);
-        let (a, b, c, d, e) = step3(a, b, c, d, e, W[20..40].try_into().unwrap(), Wrapping(0x6ed9eba1), parity);
-        let (a, b, c, d, e) = step3(a, b, c, d, e, W[40..60].try_into().unwrap(), Wrapping(0x8f1bbcdc), maj);
-        let (a, b, c, d, e) = step3(a, b, c, d, e, W[60..80].try_into().unwrap(), Wrapping(0xca62c1d6), parity);
+        let (a, b, c, d, e) = step3(a, b, c, d, e, &W, 0, Wrapping(0x5a827999), ch);
+        let (a, b, c, d, e) = step3(a, b, c, d, e, &W, 20, Wrapping(0x6ed9eba1), parity);
+        let (a, b, c, d, e) = step3(a, b, c, d, e, &W, 40, Wrapping(0x8f1bbcdc), maj);
+        let (a, b, c, d, e) = step3(a, b, c, d, e, &W, 60, Wrapping(0xca62c1d6), parity);
 
         // FIPS 180-4 6.1.2 Step 4
         H[0] += a;
@@ -90,10 +86,12 @@ fn step3(
     mut c: W32,
     mut d: W32,
     mut e: W32,
-    W: [W32; 20],
+    W: &[W32; 80],
+    t: usize,
     k: W32,
     f: impl Fn(W32, W32, W32) -> W32,
 ) -> (W32, W32, W32, W32, W32) {
+    let W = &W[t..(t + 20)];
     for W_t in W.iter() {
         let T = rotl(a, 5) + f(b, c, d) + e + k + W_t;
         e = d;

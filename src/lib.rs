@@ -22,47 +22,38 @@
 //!     <th>Description
 //! <tr><td><code>alloc (default)</code>
 //!     <td>Enable features that require use of the heap, RSA in particular.
-//! <tr><td><code>dev_urandom_fallback (default)</code>
-//!     <td>This is only applicable to Linux. On Linux, by default,
-//!         <code>ring::rand::SystemRandom</code> will fall back to reading
-//!         from <code>/dev/urandom</code> if the <code>getrandom()</code>
-//!         syscall isn't supported at runtime. When the
-//!         <code>dev_urandom_fallback</code> feature is disabled, such
-//!         fallbacks will not occur. See the documentation for
-//!         <code>rand::SystemRandom</code> for more details.
+//! <tr><td><code>less-safe-getrandom-custom-or-rdrand</code>
+//!     <td>Treat user-provided ("custom") and RDRAND-based <code>getrandom</code>
+//!         implementations as secure random number generators (see
+//!         <code>SecureRandom</code>). This feature only works with
+//!         <code>os = "none"</code> targets. See
+//!         <a href="https://docs.rs/getrandom/0.2.10/getrandom/macro.register_custom_getrandom.html">
+//!             <code>register_custom_getrandom</code>
+//!         </a> and <a href="https://docs.rs/getrandom/0.2.10/getrandom/#rdrand-on-x86">
+//!             RDRAND on x86
+//!         </a> for additional details.
 //! <tr><td><code>std</code>
 //!     <td>Enable features that use libstd, in particular
 //!         <code>std::error::Error</code> integration. Implies `alloc`.
-//! <tr><td><code>wasm32_c</code>
-//!     <td>Enables features that require a C compiler on wasm32 targets, such as
-//!        the <code>constant_time</code> module, HMAC verification, and PBKDF2
-//!        verification. Without this feature, only a subset of functionality
-//!        is provided to wasm32 targets so that a C compiler isn't needed. A
-//!        typical invocation would be:
-//!        <code>TARGET_CC=clang-10 TARGET_AR=llvm-ar-10 cargo test --target=wasm32-unknown-unknown --features=wasm32_c</code>
-//!        with <code>llvm-ar-10</code> and <code>clang-10</code> in <code>$PATH</code>.
-//!        (Going forward more functionality should be enabled by default, without
-//!        requiring these hacks, and without requiring a C compiler.)
+//! <tr><td><code>wasm32_unknown_unknown_js</code>
+//!     <td>When this feature is enabled, for the wasm32-unknown-unknown target,
+//!         Web APIs will be used to implement features like `ring::rand` that
+//!         require an operating environment of some kind. This has no effect
+//!         for any other target. This enables the `getrandom` crate's `js`
+//!         feature.
 //! </table>
 
-#![doc(html_root_url = "https://briansmith.org/rustdoc/")]
+// When running mk/package.sh, don't actually build any code.
+#![cfg(not(pregenerate_asm_only))]
 #![allow(
     clippy::collapsible_if,
     clippy::identity_op,
     clippy::len_without_is_empty,
-    clippy::len_zero,
     clippy::let_unit_value,
-    clippy::many_single_char_names,
-    clippy::needless_range_loop,
     clippy::new_without_default,
     clippy::neg_cmp_op_on_partial_ord,
-    clippy::range_plus_one,
     clippy::too_many_arguments,
-    clippy::trivially_copy_pass_by_ref,
     clippy::type_complexity,
-    clippy::unreadable_literal,
-    missing_copy_implementations,
-    missing_debug_implementations,
     non_camel_case_types,
     non_snake_case,
     unsafe_code
@@ -73,6 +64,22 @@
 // #![deny(missing_docs, unused_qualifications, variant_size_differences)]
 // turning this off because c2rust has a lot of unused results
 // #![forbid(unused_results)]
+//#![deny(variant_size_differences)]
+#![forbid(
+//    unused_results,
+    clippy::char_lit_as_u8,
+    clippy::fn_to_numeric_cast,
+    clippy::fn_to_numeric_cast_with_truncation,
+    clippy::ptr_as_ptr
+)]
+#![warn(
+    clippy::unnecessary_cast,
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss
+)]
 #![no_std]
 
 #[cfg(feature = "alloc")]
@@ -82,6 +89,9 @@ extern crate alloc;
 mod debug;
 
 #[cfg(any(target_arch="wasm32", target_os="xous"))]
+#[macro_use]
+mod prefixed;
+
 #[macro_use]
 mod prefixed;
 
@@ -98,6 +108,7 @@ mod bssl;
 mod polyfill;
 
 pub mod aead;
+
 pub mod agreement;
 
 mod bits;
@@ -125,7 +136,7 @@ pub mod pkcs8;
 pub mod rand;
 
 #[cfg(feature = "alloc")]
-mod rsa;
+pub mod rsa;
 
 pub mod signature;
 

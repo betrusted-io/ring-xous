@@ -15,24 +15,21 @@
 
 // TODO: enforce maximum input length.
 
-use super::{block::BLOCK_LEN, Tag, TAG_LEN};
+use super::{Tag, TAG_LEN};
 use crate::{c, cpu};
 
 /// A Poly1305 key.
 pub(super) struct Key {
     key_and_nonce: [u8; KEY_LEN],
-    cpu_features: cpu::Features,
 }
 
-const KEY_LEN: usize = 2 * BLOCK_LEN;
+pub(super) const BLOCK_LEN: usize = 16;
+pub(super) const KEY_LEN: usize = 2 * BLOCK_LEN;
 
 impl Key {
     #[inline]
-    pub(super) fn new(key_and_nonce: [u8; KEY_LEN], cpu_features: cpu::Features) -> Self {
-        Self {
-            key_and_nonce,
-            cpu_features,
-        }
+    pub(super) fn new(key_and_nonce: [u8; KEY_LEN]) -> Self {
+        Self { key_and_nonce }
     }
 }
 
@@ -42,7 +39,7 @@ pub struct Context {
     cpu_features: cpu::Features,
 }
 
-// Keep in sync with `poly1305_state` in GFp/poly1305.h.
+// Keep in sync with `poly1305_state` in ring-core/poly1305.h.
 //
 // The C code, in particular the way the `poly1305_aligned_state` functions
 // are used, is only correct when the state buffer is 64-byte aligned.
@@ -61,13 +58,13 @@ macro_rules! dispatch {
             // Apple's 32-bit ARM ABI is incompatible with the assembly code.
             #[cfg(all(target_arch = "arm", not(target_vendor = "apple")))]
             () if cpu::arm::NEON.available($features) => {
-                extern "C" {
+                prefixed_extern! {
                     fn $neon_f( $( $p : $t ),+ );
                 }
                 unsafe { $neon_f( $( $a ),+ ) }
             }
             () => {
-                extern "C" {
+                prefixed_extern! {
                     fn $f( $( $p : $t ),+ );
                 }
                 unsafe { $f( $( $a ),+ ) }
@@ -78,12 +75,7 @@ macro_rules! dispatch {
 
 impl Context {
     #[inline]
-    pub(super) fn from_key(
-        Key {
-            key_and_nonce,
-            cpu_features,
-        }: Key,
-    ) -> Self {
+    pub(super) fn from_key(Key { key_and_nonce }: Key, cpu_features: cpu::Features) -> Self {
         let mut ctx = Self {
             state: poly1305_state([0u8; OPAQUE_LEN]),
             cpu_features,
@@ -91,7 +83,7 @@ impl Context {
 
         dispatch!(
             cpu_features =>
-            (GFp_poly1305_init | GFp_poly1305_init_neon)
+            (CRYPTO_poly1305_init | CRYPTO_poly1305_init_neon)
             (statep: &mut poly1305_state, key: &[u8; KEY_LEN])
             (&mut ctx.state, &key_and_nonce));
 
@@ -102,7 +94,7 @@ impl Context {
     pub fn update(&mut self, input: &[u8]) {
         dispatch!(
             self.cpu_features =>
-            (GFp_poly1305_update | GFp_poly1305_update_neon)
+            (CRYPTO_poly1305_update | CRYPTO_poly1305_update_neon)
             (statep: &mut poly1305_state, input: *const u8, in_len: c::size_t)
             (&mut self.state, input.as_ptr(), input.len()));
     }
@@ -111,7 +103,7 @@ impl Context {
         let mut tag = Tag([0u8; TAG_LEN]);
         dispatch!(
             self.cpu_features =>
-            (GFp_poly1305_finish | GFp_poly1305_finish_neon)
+            (CRYPTO_poly1305_finish | CRYPTO_poly1305_finish_neon)
             (statep: &mut poly1305_state, mac: &mut [u8; TAG_LEN])
             (&mut self.state, &mut tag.0));
         tag
@@ -122,8 +114,8 @@ impl Context {
 ///
 /// This is used by chacha20_poly1305_openssh and the standalone
 /// poly1305 test vectors.
-pub(super) fn sign(key: Key, input: &[u8]) -> Tag {
-    let mut ctx = Context::from_key(key);
+pub(super) fn sign(key: Key, input: &[u8], cpu_features: cpu::Features) -> Tag {
+    let mut ctx = Context::from_key(key, cpu_features);
     ctx.update(input);
     ctx.finish()
 }
@@ -132,7 +124,6 @@ pub(super) fn sign(key: Key, input: &[u8]) -> Tag {
 mod tests {
     use super::*;
     use crate::test;
-    use core::convert::TryInto;
 
     // Adapted from BoringSSL's crypto/poly1305/poly1305_test.cc.
     #[test]
@@ -141,11 +132,11 @@ mod tests {
         test::run(test_file!("poly1305_test.txt"), |section, test_case| {
             assert_eq!(section, "");
             let key = test_case.consume_bytes("Key");
-            let key: &[u8; BLOCK_LEN * 2] = key.as_slice().try_into().unwrap();
+            let key: &[u8; KEY_LEN] = key.as_slice().try_into().unwrap();
             let input = test_case.consume_bytes("Input");
             let expected_mac = test_case.consume_bytes("MAC");
-            let key = Key::new(*key, cpu_features);
-            let Tag(actual_mac) = sign(key, &input);
+            let key = Key::new(*key);
+            let Tag(actual_mac) = sign(key, &input, cpu_features);
             assert_eq!(expected_mac, actual_mac.as_ref());
 
             Ok(())

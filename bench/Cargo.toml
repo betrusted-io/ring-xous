@@ -1,0 +1,36 @@
+[package]
+edition = "2021"
+name = "ring-bench"
+publish = false
+version = "0.1.0"
+
+[dependencies]
+ring = { path = "../" }
+
+[dev-dependencies]
+criterion = { version = "0.5.1", default-features = false }
+
+[[bench]]
+name = "aead"
+harness = false
+path = "aead.rs"
+
+[[bench]]
+name = "agreement"
+harness = false
+path = "agreement.rs"
+
+[[bench]]
+name = "digest"
+harness = false
+path = "digest.rs"
+
+[[bench]]
+name = "ecdsa"
+harness = false
+path = "ecdsa.rs"
+
+[[bench]]
+name = "rsa"
+harness = false
+path = "rsa.rs"

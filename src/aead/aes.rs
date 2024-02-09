@@ -12,17 +12,28 @@
 // OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-use super::{counter, iv::Iv, quic::Sample, Block, Direction, BLOCK_LEN};
-use crate::{bits::BitLength, c, cpu, endian::*, error, polyfill};
+use super::{
+    block::{Block, BLOCK_LEN},
+    nonce::Nonce,
+    quic::Sample,
+};
+use crate::{
+    bits::BitLength,
+    c, cpu,
+    endian::BigEndian,
+    error,
+    polyfill::{self, ArraySplitMap},
+};
+use core::ops::RangeFrom;
 
-pub(crate) struct Key {
+#[derive(Clone)]
+pub(super) struct Key {
     inner: AES_KEY,
-    cpu_features: cpu::Features,
 }
 
 macro_rules! set_encrypt_key {
     ( $name:ident, $bytes:expr, $key_bits:expr, $key:expr ) => {{
-        extern "C" {
+        prefixed_extern! {
             fn $name(user_key: *const u8, bits: c::uint, key: &mut AES_KEY) -> c::int;
         }
         set_encrypt_key($name, $bytes, $key_bits, $key)
@@ -37,6 +48,7 @@ fn set_encrypt_key(
     key: &mut AES_KEY,
 ) -> Result<(), error::Unspecified> {
     // Unusually, in this case zero means success and non-zero means failure.
+    #[allow(clippy::cast_possible_truncation)]
     if 0 == unsafe { f(bytes.as_ptr(), key_bits.as_usize_bits() as c::uint, key) } {
         Ok(())
     } else {
@@ -46,7 +58,7 @@ fn set_encrypt_key(
 
 macro_rules! encrypt_block {
     ($name:ident, $block:expr, $key:expr) => {{
-        extern "C" {
+        prefixed_extern! {
             fn $name(a: &Block, r: *mut Block, key: &AES_KEY);
         }
         encrypt_block_($name, $block, $key)
@@ -67,46 +79,47 @@ fn encrypt_block_(
 }
 
 macro_rules! ctr32_encrypt_blocks {
-    ($name:ident, $in_out:expr, $in_prefix_len:expr, $key:expr, $ivec:expr ) => {{
-        extern "C" {
+    ($name:ident, $in_out:expr, $src:expr, $key:expr, $ivec:expr ) => {{
+        prefixed_extern! {
             fn $name(
-                input: *const u8,
-                output: *mut u8,
+                input: *const [u8; BLOCK_LEN],
+                output: *mut [u8; BLOCK_LEN],
                 blocks: c::size_t,
                 key: &AES_KEY,
                 ivec: &Counter,
             );
         }
-        ctr32_encrypt_blocks_($name, $in_out, $in_prefix_len, $key, $ivec)
+        ctr32_encrypt_blocks_($name, $in_out, $src, $key, $ivec)
     }};
 }
 
 #[inline]
 fn ctr32_encrypt_blocks_(
     f: unsafe extern "C" fn(
-        input: *const u8,
-        output: *mut u8,
+        input: *const [u8; BLOCK_LEN],
+        output: *mut [u8; BLOCK_LEN],
         blocks: c::size_t,
         key: &AES_KEY,
         ivec: &Counter,
     ),
     in_out: &mut [u8],
-    in_prefix_len: usize,
+    src: RangeFrom<usize>,
     key: &AES_KEY,
     ctr: &mut Counter,
 ) {
-    let in_out_len = in_out.len().checked_sub(in_prefix_len).unwrap();
+    let in_out_len = in_out[src.clone()].len();
     assert_eq!(in_out_len % BLOCK_LEN, 0);
 
     let blocks = in_out_len / BLOCK_LEN;
+    #[allow(clippy::cast_possible_truncation)]
     let blocks_u32 = blocks as u32;
     assert_eq!(blocks, polyfill::usize_from_u32(blocks_u32));
 
-    let input = in_out[in_prefix_len..].as_ptr();
-    let output = in_out.as_mut_ptr();
+    let input = in_out[src].as_ptr().cast::<[u8; BLOCK_LEN]>();
+    let output = in_out.as_mut_ptr().cast::<[u8; BLOCK_LEN]>();
 
     unsafe {
-        f(input, output, blocks, &key, ctr);
+        f(input, output, blocks, key, ctr);
     }
     ctr.increment_by_less_safe(blocks_u32);
 }
@@ -139,7 +152,7 @@ impl Key {
                 target_arch = "x86"
             ))]
             Implementation::HWAES => {
-                set_encrypt_key!(GFp_aes_hw_set_encrypt_key, bytes, key_bits, &mut key)?
+                set_encrypt_key!(aes_hw_set_encrypt_key, bytes, key_bits, &mut key)?
             }
 
             #[cfg(any(
@@ -149,31 +162,27 @@ impl Key {
                 target_arch = "x86"
             ))]
             Implementation::VPAES_BSAES => {
-                set_encrypt_key!(GFp_vpaes_set_encrypt_key, bytes, key_bits, &mut key)?
+                set_encrypt_key!(vpaes_set_encrypt_key, bytes, key_bits, &mut key)?
             }
 
-            #[cfg(not(target_arch = "aarch64"))]
             Implementation::NOHW => {
-                set_encrypt_key!(GFp_aes_nohw_set_encrypt_key, bytes, key_bits, &mut key)?
+                set_encrypt_key!(aes_nohw_set_encrypt_key, bytes, key_bits, &mut key)?
             }
         };
 
-        Ok(Self {
-            inner: key,
-            cpu_features,
-        })
+        Ok(Self { inner: key })
     }
 
     #[inline]
-    pub fn encrypt_block(&self, a: Block) -> Block {
-        match detect_implementation(self.cpu_features) {
+    pub fn encrypt_block(&self, a: Block, cpu_features: cpu::Features) -> Block {
+        match detect_implementation(cpu_features) {
             #[cfg(any(
                 target_arch = "aarch64",
                 target_arch = "arm",
                 target_arch = "x86_64",
                 target_arch = "x86"
             ))]
-            Implementation::HWAES => encrypt_block!(GFp_aes_hw_encrypt, a, self),
+            Implementation::HWAES => encrypt_block!(aes_hw_encrypt, a, self),
 
             #[cfg(any(
                 target_arch = "aarch64",
@@ -181,50 +190,40 @@ impl Key {
                 target_arch = "x86_64",
                 target_arch = "x86"
             ))]
-            Implementation::VPAES_BSAES => encrypt_block!(GFp_vpaes_encrypt, a, self),
+            Implementation::VPAES_BSAES => encrypt_block!(vpaes_encrypt, a, self),
 
-            #[cfg(not(target_arch = "aarch64"))]
-            Implementation::NOHW => encrypt_block!(GFp_aes_nohw_encrypt, a, self),
+            Implementation::NOHW => encrypt_block!(aes_nohw_encrypt, a, self),
         }
     }
 
     #[inline]
-    pub fn encrypt_iv_xor_block(&self, iv: Iv, input: Block) -> Block {
-        let mut output = self.encrypt_block(Block::from(&iv.into_bytes_less_safe()));
-        output.bitxor_assign(input);
-        output
+    pub fn encrypt_iv_xor_block(&self, iv: Iv, input: Block, cpu_features: cpu::Features) -> Block {
+        let encrypted_iv = self.encrypt_block(iv.into_block_less_safe(), cpu_features);
+        encrypted_iv ^ input
     }
 
     #[inline]
-    pub(super) fn ctr32_encrypt_blocks(
+    pub(super) fn ctr32_encrypt_within(
         &self,
         in_out: &mut [u8],
-        direction: Direction,
+        src: RangeFrom<usize>,
         ctr: &mut Counter,
+        cpu_features: cpu::Features,
     ) {
-        let in_prefix_len = match direction {
-            Direction::Opening { in_prefix_len } => in_prefix_len,
-            Direction::Sealing => 0,
-        };
-
-        let in_out_len = in_out.len().checked_sub(in_prefix_len).unwrap();
+        let in_out_len = in_out[src.clone()].len();
 
         assert_eq!(in_out_len % BLOCK_LEN, 0);
 
-        match detect_implementation(self.cpu_features) {
+        match detect_implementation(cpu_features) {
             #[cfg(any(
                 target_arch = "aarch64",
                 target_arch = "arm",
                 target_arch = "x86_64",
                 target_arch = "x86"
             ))]
-            Implementation::HWAES => ctr32_encrypt_blocks!(
-                GFp_aes_hw_ctr32_encrypt_blocks,
-                in_out,
-                in_prefix_len,
-                &self.inner,
-                ctr
-            ),
+            Implementation::HWAES => {
+                ctr32_encrypt_blocks!(aes_hw_ctr32_encrypt_blocks, in_out, src, &self.inner, ctr)
+            }
 
             #[cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86_64"))]
             Implementation::VPAES_BSAES => {
@@ -242,19 +241,16 @@ impl Key {
                         rd_key: [0u32; 4 * (MAX_ROUNDS + 1)],
                         rounds: 0,
                     };
-                    extern "C" {
-                        fn GFp_vpaes_encrypt_key_to_bsaes(
-                            bsaes_key: &mut AES_KEY,
-                            vpaes_key: &AES_KEY,
-                        );
+                    prefixed_extern! {
+                        fn vpaes_encrypt_key_to_bsaes(bsaes_key: &mut AES_KEY, vpaes_key: &AES_KEY);
                     }
                     unsafe {
-                        GFp_vpaes_encrypt_key_to_bsaes(&mut bsaes_key, &self.inner);
+                        vpaes_encrypt_key_to_bsaes(&mut bsaes_key, &self.inner);
                     }
                     ctr32_encrypt_blocks!(
-                        GFp_bsaes_ctr32_encrypt_blocks,
-                        &mut in_out[..(bsaes_in_out_len + in_prefix_len)],
-                        in_prefix_len,
+                        bsaes_ctr32_encrypt_blocks,
+                        &mut in_out[..(src.start + bsaes_in_out_len)],
+                        src.clone(),
                         &bsaes_key,
                         ctr
                     );
@@ -264,35 +260,24 @@ impl Key {
                     in_out
                 };
 
-                ctr32_encrypt_blocks!(
-                    GFp_vpaes_ctr32_encrypt_blocks,
-                    in_out,
-                    in_prefix_len,
-                    &self.inner,
-                    ctr
-                )
+                ctr32_encrypt_blocks!(vpaes_ctr32_encrypt_blocks, in_out, src, &self.inner, ctr)
             }
 
-            #[cfg(any(target_arch = "x86"))]
+            #[cfg(target_arch = "x86")]
             Implementation::VPAES_BSAES => {
-                super::shift::shift_full_blocks(in_out, in_prefix_len, |input| {
-                    self.encrypt_iv_xor_block(ctr.increment(), Block::from(input))
+                super::shift::shift_full_blocks(in_out, src, |input| {
+                    self.encrypt_iv_xor_block(ctr.increment(), Block::from(input), cpu_features)
                 });
             }
 
-            #[cfg(not(target_arch = "aarch64"))]
-            Implementation::NOHW => ctr32_encrypt_blocks!(
-                GFp_aes_nohw_ctr32_encrypt_blocks,
-                in_out,
-                in_prefix_len,
-                &self.inner,
-                ctr
-            ),
+            Implementation::NOHW => {
+                ctr32_encrypt_blocks!(aes_nohw_ctr32_encrypt_blocks, in_out, src, &self.inner, ctr)
+            }
         }
     }
 
     pub fn new_mask(&self, sample: Sample) -> [u8; 5] {
-        let block = self.encrypt_block(Block::from(&sample));
+        let block = self.encrypt_block(Block::from(&sample), cpu::features());
 
         let mut out: [u8; 5] = [0; 5];
         out.copy_from_slice(&block.as_ref()[..5]);
@@ -300,17 +285,10 @@ impl Key {
         out
     }
 
-    // TODO: use `matches!` when MSRV increases to 1.42.0 and remove this
-    // `#[allow(...)]`
-    #[allow(clippy::unknown_clippy_lints)]
-    #[allow(clippy::match_like_matches_macro)]
     #[cfg(target_arch = "x86_64")]
     #[must_use]
-    pub fn is_aes_hw(&self) -> bool {
-        match detect_implementation(self.cpu_features) {
-            Implementation::HWAES => true,
-            _ => false,
-        }
+    pub fn is_aes_hw(&self, cpu_features: cpu::Features) -> bool {
+        matches!(detect_implementation(cpu_features), Implementation::HWAES)
     }
 
     #[cfg(target_arch = "x86_64")]
@@ -322,6 +300,7 @@ impl Key {
 
 // Keep this in sync with AES_KEY in aes.h.
 #[repr(C)]
+#[derive(Clone)]
 pub(super) struct AES_KEY {
     pub rd_key: [u32; 4 * (MAX_ROUNDS + 1)],
     pub rounds: c::uint,
@@ -335,10 +314,52 @@ pub enum Variant {
     AES_256,
 }
 
-pub type Counter = counter::Counter<BigEndian<u32>>;
+/// Nonce || Counter, all big-endian.
+#[repr(transparent)]
+pub(super) struct Counter([BigEndian<u32>; 4]);
+
+impl Counter {
+    pub fn one(nonce: Nonce) -> Self {
+        let [n0, n1, n2] = nonce.as_ref().array_split_map(BigEndian::<u32>::from);
+        Self([n0, n1, n2, 1.into()])
+    }
+
+    pub fn increment(&mut self) -> Iv {
+        let iv: [[u8; 4]; 4] = self.0.map(Into::into);
+        let iv = Iv(Block::from(iv));
+        self.increment_by_less_safe(1);
+        iv
+    }
+
+    fn increment_by_less_safe(&mut self, increment_by: u32) {
+        let old_value: u32 = self.0[3].into();
+        self.0[3] = (old_value + increment_by).into();
+    }
+}
+
+/// The IV for a single block encryption.
+///
+/// Intentionally not `Clone` to ensure each is used only once.
+pub struct Iv(Block);
+
+impl From<Counter> for Iv {
+    fn from(counter: Counter) -> Self {
+        let iv: [[u8; 4]; 4] = counter.0.map(Into::into);
+        Self(Block::from(iv))
+    }
+}
+
+impl Iv {
+    /// "Less safe" because it defeats attempts to use the type system to prevent reuse of the IV.
+    #[inline]
+    pub(super) fn into_block_less_safe(self) -> Block {
+        self.0
+    }
+}
 
 #[repr(C)] // Only so `Key` can be `#[repr(C)]`
 #[derive(Clone, Copy)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum Implementation {
     #[cfg(any(
         target_arch = "aarch64",
@@ -357,7 +378,6 @@ pub enum Implementation {
     ))]
     VPAES_BSAES = 2,
 
-    #[cfg(not(target_arch = "aarch64"))]
     NOHW = 3,
 }
 
@@ -371,14 +391,16 @@ fn detect_implementation(cpu_features: cpu::Features) -> Implementation {
     )))]
     let _cpu_features = cpu_features;
 
-    #[cfg(any(
-        target_arch = "aarch64",
-        target_arch = "arm",
-        target_arch = "x86_64",
-        target_arch = "x86"
-    ))]
+    #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
     {
-        if cpu::intel::AES.available(cpu_features) || cpu::arm::AES.available(cpu_features) {
+        if cpu::arm::AES.available(cpu_features) {
+            return Implementation::HWAES;
+        }
+    }
+
+    #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+    {
+        if cpu::intel::AES.available(cpu_features) {
             return Implementation::HWAES;
         }
     }
@@ -390,19 +412,13 @@ fn detect_implementation(cpu_features: cpu::Features) -> Implementation {
         }
     }
 
-    #[cfg(target_arch = "arm")]
+    #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
     {
         if cpu::arm::NEON.available(cpu_features) {
             return Implementation::VPAES_BSAES;
         }
     }
 
-    #[cfg(target_arch = "aarch64")]
-    {
-        Implementation::VPAES_BSAES
-    }
-
-    #[cfg(not(target_arch = "aarch64"))]
     {
         Implementation::NOHW
     }
@@ -410,12 +426,12 @@ fn detect_implementation(cpu_features: cpu::Features) -> Implementation {
 
 #[cfg(test)]
 mod tests {
-    use super::{super::BLOCK_LEN, *};
+    use super::*;
     use crate::test;
-    use core::convert::TryInto;
 
     #[test]
     pub fn test_aes() {
+        let cpu_features = cpu::features();
         test::run(test_file!("aes_tests.txt"), |section, test_case| {
             assert_eq!(section, "");
             let key = consume_key(test_case, "Key");
@@ -424,7 +440,7 @@ mod tests {
             let expected_output = test_case.consume_bytes("Output");
 
             let block = Block::from(input);
-            let output = key.encrypt_block(block);
+            let output = key.encrypt_block(block, cpu_features);
             assert_eq!(output.as_ref(), &expected_output[..]);
 
             Ok(())

@@ -29,31 +29,51 @@ typedef Limb Elem[P384_LIMBS];
 typedef Limb ScalarMont[P384_LIMBS];
 typedef Limb Scalar[P384_LIMBS];
 
-
 static const BN_ULONG Q[P384_LIMBS] = {
-  TOBN(0x00000000, 0xffffffff),
-  TOBN(0xffffffff, 0x00000000),
-  TOBN(0xffffffff, 0xfffffffe),
-  TOBN(0xffffffff, 0xffffffff),
-  TOBN(0xffffffff, 0xffffffff),
-  TOBN(0xffffffff, 0xffffffff),
+#if defined(OPENSSL_64_BIT)
+  0xffffffff, 0xffffffff00000000, 0xfffffffffffffffe, 0xffffffffffffffff,
+  0xffffffffffffffff, 0xffffffffffffffff
+#else
+  0xffffffff, 0, 0, 0xffffffff, 0xfffffffe, 0xffffffff, 0xffffffff, 0xffffffff,
+  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
+#endif
 };
 
 static const BN_ULONG N[P384_LIMBS] = {
-  TOBN(0xecec196a, 0xccc52973),
-  TOBN(0x581a0db2, 0x48b0a77a),
-  TOBN(0xc7634d81, 0xf4372ddf),
-  TOBN(0xffffffff, 0xffffffff),
-  TOBN(0xffffffff, 0xffffffff),
-  TOBN(0xffffffff, 0xffffffff),
+#if defined(OPENSSL_64_BIT)
+  0xecec196accc52973, 0x581a0db248b0a77a, 0xc7634d81f4372ddf, 0xffffffffffffffff,
+  0xffffffffffffffff, 0xffffffffffffffff
+#else
+  0xccc52973, 0xecec196a, 0x48b0a77a, 0x581a0db2, 0xf4372ddf, 0xc7634d81,
+  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
+#endif
 };
-
 
 static const BN_ULONG ONE[P384_LIMBS] = {
-  TOBN(0xffffffff, 1), TOBN(0, 0xffffffff), TOBN(0, 1), TOBN(0, 0), TOBN(0, 0),
-  TOBN(0, 0),
+#if defined(OPENSSL_64_BIT)
+  0xffffffff00000001, 0xffffffff, 1, 0, 0
+#else
+  1, 0xffffffff, 0xffffffff, 0, 1, 0, 0, 0, 0, 0
+#endif
 };
 
+static const Elem Q_PLUS_1_SHR_1 = {
+#if defined(OPENSSL_64_BIT)
+  0x80000000, 0x7fffffff80000000, 0xffffffffffffffff, 0xffffffffffffffff,
+  0xffffffffffffffff, 0x7fffffffffffffff
+#else
+  0x80000000, 0, 0x80000000, 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x7fffffff
+#endif
+};
+
+static const BN_ULONG Q_N0[] = {
+  BN_MONT_CTX_N0(1, 1)
+};
+
+static const BN_ULONG N_N0[] = {
+  BN_MONT_CTX_N0(0x6ed46089, 0xe88fdc45)
+};
 
 /* XXX: MSVC for x86 warns when it fails to inline these functions it should
  * probably inline. */
@@ -141,12 +161,6 @@ static void elem_div_by_2(Elem r, const Elem a) {
     carry = new_carry;
   }
 
-  static const Elem Q_PLUS_1_SHR_1 = {
-    TOBN(0x00000000, 0x80000000), TOBN(0x7fffffff, 0x80000000),
-    TOBN(0xffffffff, 0xffffffff), TOBN(0xffffffff, 0xffffffff),
-    TOBN(0xffffffff, 0xffffffff), TOBN(0x7fffffff, 0xffffffff),
-  };
-
   Elem adjusted;
   BN_ULONG carry2 = limbs_add(adjusted, r, Q_PLUS_1_SHR_1, P384_LIMBS);
   dev_assert_secret(carry2 == 0);
@@ -155,11 +169,8 @@ static void elem_div_by_2(Elem r, const Elem a) {
 }
 
 static inline void elem_mul_mont(Elem r, const Elem a, const Elem b) {
-  static const BN_ULONG Q_N0[] = {
-    BN_MONT_CTX_N0(0x1, 0x1)
-  };
   /* XXX: Not (clearly) constant-time; inefficient.*/
-  GFp_bn_mul_mont(r, a, b, Q, Q_N0, P384_LIMBS);
+  bn_mul_mont(r, a, b, Q, Q_N0, P384_LIMBS);
 }
 
 static inline void elem_mul_by_2(Elem r, const Elem a) {
@@ -178,23 +189,19 @@ static inline void elem_sqr_mont(Elem r, const Elem a) {
   elem_mul_mont(r, a, a);
 }
 
-void GFp_p384_elem_add(Elem r, const Elem a, const Elem b) {
-  elem_add(r, a, b);
-}
-
-void GFp_p384_elem_sub(Elem r, const Elem a, const Elem b) {
+void p384_elem_sub(Elem r, const Elem a, const Elem b) {
   elem_sub(r, a, b);
 }
 
-void GFp_p384_elem_div_by_2(Elem r, const Elem a) {
+void p384_elem_div_by_2(Elem r, const Elem a) {
   elem_div_by_2(r, a);
 }
 
-void GFp_p384_elem_mul_mont(Elem r, const Elem a, const Elem b) {
+void p384_elem_mul_mont(Elem r, const Elem a, const Elem b) {
   elem_mul_mont(r, a, b);
 }
 
-void GFp_p384_elem_neg(Elem r, const Elem a) {
+void p384_elem_neg(Elem r, const Elem a) {
   Limb is_zero = LIMBS_are_zero(a, P384_LIMBS);
   Carry borrow = limbs_sub(r, Q, a, P384_LIMBS);
   dev_assert_secret(borrow == 0);
@@ -205,19 +212,16 @@ void GFp_p384_elem_neg(Elem r, const Elem a) {
 }
 
 
-void GFp_p384_scalar_mul_mont(ScalarMont r, const ScalarMont a,
+void p384_scalar_mul_mont(ScalarMont r, const ScalarMont a,
                               const ScalarMont b) {
-  static const BN_ULONG N_N0[] = {
-    BN_MONT_CTX_N0(0x6ed46089, 0xe88fdc45)
-  };
   /* XXX: Inefficient. TODO: Add dedicated multiplication routine. */
-  GFp_bn_mul_mont(r, a, b, N, N_N0, P384_LIMBS);
+  bn_mul_mont(r, a, b, N, N_N0, P384_LIMBS);
 }
 
 
 /* TODO(perf): Optimize this. */
 
-static void gfp_p384_point_select_w5(P384_POINT *out,
+static void p384_point_select_w5(P384_POINT *out,
                                      const P384_POINT table[16], size_t index) {
   Elem x; limbs_zero(x, P384_LIMBS);
   Elem y; limbs_zero(y, P384_LIMBS);
@@ -225,7 +229,7 @@ static void gfp_p384_point_select_w5(P384_POINT *out,
 
   // TODO: Rewrite in terms of |limbs_select|.
   for (size_t i = 0; i < 16; ++i) {
-    crypto_word equal = constant_time_eq_w(index, (crypto_word)i + 1);
+    crypto_word_t equal = constant_time_eq_w(index, (crypto_word_t)i + 1);
     for (size_t j = 0; j < P384_LIMBS; ++j) {
       x[j] = constant_time_select_w(equal, table[i].X[j], x[j]);
       y[j] = constant_time_select_w(equal, table[i].Y[j], y[j]);

@@ -15,11 +15,11 @@
 #ifndef RING_LIMBS_H
 #define RING_LIMBS_H
 
-#include <GFp/base.h>
+#include <ring-core/base.h>
 
 #include "../internal.h"
 
-typedef crypto_word Limb;
+typedef crypto_word_t Limb;
 
 #define LIMB_BITS CRYPTO_WORD_BITS
 #define LIMB_HIGH_BIT ((Limb)(1) << (LIMB_BITS - 1))

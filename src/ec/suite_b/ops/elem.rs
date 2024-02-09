@@ -13,7 +13,10 @@
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 use crate::{
-    arithmetic::montgomery::{Encoding, ProductEncoding},
+    arithmetic::{
+        limbs_from_hex,
+        montgomery::{Encoding, ProductEncoding},
+    },
     limb::{Limb, LIMB_BITS},
 };
 use core::marker::PhantomData;
@@ -23,14 +26,14 @@ use core::marker::PhantomData;
 #[derive(Clone, Copy)]
 pub struct Elem<M, E: Encoding> {
     // XXX: pub
-    pub limbs: [Limb; MAX_LIMBS],
+    pub(super) limbs: [Limb; MAX_LIMBS],
 
     /// The modulus *m* for the ring ℤ/mℤ for which this element is a value.
-    pub m: PhantomData<M>,
+    pub(super) m: PhantomData<M>,
 
     /// The number of Montgomery factors that need to be canceled out from
     /// `value` to get the actual value.
-    pub encoding: PhantomData<E>,
+    pub(super) encoding: PhantomData<E>,
 }
 
 impl<M, E: Encoding> Elem<M, E> {
@@ -40,6 +43,14 @@ impl<M, E: Encoding> Elem<M, E> {
     pub fn zero() -> Self {
         Self {
             limbs: [0; MAX_LIMBS],
+            m: PhantomData,
+            encoding: PhantomData,
+        }
+    }
+
+    pub const fn from_hex(hex: &str) -> Self {
+        Elem {
+            limbs: limbs_from_hex(hex),
             m: PhantomData,
             encoding: PhantomData,
         }
