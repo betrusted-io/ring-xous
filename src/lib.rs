@@ -120,11 +120,6 @@ pub mod io;
 
 mod cpu;
 pub mod digest;
-#[cfg(any(target_arch="wasm32", all(target_os="xous",not(target_arch="x86_64"))))]
-pub mod ec_17;
-#[cfg(any(target_arch="wasm32", all(target_os="xous",not(target_arch="x86_64"))))]
-pub use ec_17 as ec;
-#[cfg(not(any(target_arch="wasm32", all(target_os="xous",not(target_arch="x86_64")))))]
 mod ec;
 mod endian;
 pub mod error;
