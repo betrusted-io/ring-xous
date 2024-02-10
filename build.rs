@@ -306,9 +306,9 @@ fn ring_build_rs_main() {
         env.starts_with("musl")
     };
 
-    let is_git = false;
     // don't build assembly routines from source -- these are fixed and pre-built for this config
     // in order to avoid having to install perl and nasm on Windows clients.
+    let is_git = false;
     // std::fs::metadata(".git").is_ok();
 
     // Published builds are always built in release mode.
@@ -895,6 +895,7 @@ fn prefix_all_symbols(pp: char, prefix_prefix: &str, prefix: &str) -> String {
         ("ecp_nistz256_sqr_mont", "p256_sqr_mont"),
     ];
 
+    // Don't tamper with symbol names in Xous - we're using native Rust code
     #[cfg(any(target_arch="wasm32", target_os="xous"))]
     static SYMBOLS_TO_PREFIX: &[&str] = &[];
     #[cfg(not(any(target_arch="wasm32", target_os="xous")))]

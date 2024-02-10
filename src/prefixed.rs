@@ -92,6 +92,8 @@ macro_rules! prefixed_item {
     };
 }
 
+// Xous uses no prefix because the functions are not thunked out to FFI modules --
+// they are native Rust functions!
 #[cfg(any(target_arch="wasm32", target_os="xous"))]
 macro_rules! prefixed_item {
     // Calculate the prefixed name in a separate layer of macro expansion
