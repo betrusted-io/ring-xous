@@ -3,21 +3,13 @@
 #![allow(non_upper_case_globals)]
 
 extern "C" {
+    fn LIMBS_shl_mod(r: *mut Limb, a: *const Limb, m: *const Limb, num_limbs: size_t);
     fn __assert_fail(
         __assertion: *const core::ffi::c_char,
         __file: *const core::ffi::c_char,
         __line: core::ffi::c_uint,
         __function: *const core::ffi::c_char,
     ) -> !;
-    fn LIMBS_are_zero(a: *const Limb, num_limbs: size_t) -> Limb;
-    fn LIMBS_equal(a: *const Limb, b: *const Limb, num_limbs: size_t) -> Limb;
-    fn LIMBS_add_mod(
-        r: *mut Limb,
-        a: *const Limb,
-        b: *const Limb,
-        m: *const Limb,
-        num_limbs: size_t,
-    );
     fn LIMBS_sub_mod(
         r: *mut Limb,
         a: *const Limb,
@@ -25,7 +17,15 @@ extern "C" {
         m: *const Limb,
         num_limbs: size_t,
     );
-    fn LIMBS_shl_mod(r: *mut Limb, a: *const Limb, m: *const Limb, num_limbs: size_t);
+    fn LIMBS_add_mod(
+        r: *mut Limb,
+        a: *const Limb,
+        b: *const Limb,
+        m: *const Limb,
+        num_limbs: size_t,
+    );
+    fn LIMBS_equal(a: *const Limb, b: *const Limb, num_limbs: size_t) -> Limb;
+    fn LIMBS_are_zero(a: *const Limb, num_limbs: size_t) -> Limb;
     fn bn_mul_mont(
         rp: *mut BN_ULONG,
         ap: *const BN_ULONG,

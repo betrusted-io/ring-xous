@@ -31,7 +31,6 @@ const X86: &str = "x86";
 const X86_64: &str = "x86_64";
 const AARCH64: &str = "aarch64";
 const ARM: &str = "arm";
-const WASM32: &str = "wasm32";
 
 #[rustfmt::skip]
 const RING_SRCS: &[(&[&str], &str)] = &[
@@ -112,6 +111,7 @@ fn cpp_flags(compiler: &cc::Tool) -> &'static [&'static str] {
         static NON_MSVC_FLAGS: &[&str] = &[
             "-fvisibility=hidden",
             "-std=c1x", // GCC 4.6 requires "c1x" instead of "c11"
+            "-pedantic",
             "-Wall",
             "-Wextra",
             "-Wbad-function-cast",
@@ -121,7 +121,6 @@ fn cpp_flags(compiler: &cc::Tool) -> &'static [&'static str] {
             "-Wenum-compare",
             "-Wfloat-equal",
             "-Wformat=2",
-            #[cfg(not(feature = "size_optimized"))]
             "-Winline",
             "-Winvalid-pch",
             "-Wmissing-field-initializers",
@@ -163,63 +162,63 @@ fn cpp_flags(compiler: &cc::Tool) -> &'static [&'static str] {
 const ASM_TARGETS: &[AsmTarget] = &[
     AsmTarget {
         oss: LINUX_ABI,
-        arch: AARCH64,
+        arch: "aarch64",
         perlasm_format: "linux64",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: LINUX_ABI,
-        arch: ARM,
+        arch: "arm",
         perlasm_format: "linux32",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: LINUX_ABI,
-        arch: X86,
+        arch: "x86",
         perlasm_format: "elf",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: LINUX_ABI,
-        arch: X86_64,
+        arch: "x86_64",
         perlasm_format: "elf",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: MACOS_ABI,
-        arch: AARCH64,
+        arch: "aarch64",
         perlasm_format: "ios64",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: MACOS_ABI,
-        arch: X86_64,
+        arch: "x86_64",
         perlasm_format: "macosx",
         asm_extension: "S",
         preassemble: false,
     },
     AsmTarget {
         oss: &[WINDOWS],
-        arch: X86,
+        arch: "x86",
         perlasm_format: "win32n",
         asm_extension: "asm",
         preassemble: true,
     },
     AsmTarget {
         oss: &[WINDOWS],
-        arch: X86_64,
+        arch: "x86_64",
         perlasm_format: "nasm",
         asm_extension: "asm",
         preassemble: true,
     },
     AsmTarget {
         oss: &[WINDOWS],
-        arch: AARCH64,
+        arch: "aarch64",
         perlasm_format: "win64",
         asm_extension: "S",
         preassemble: false,
@@ -265,9 +264,8 @@ const LINUX_ABI: &[&str] = &[
 
 /// Operating systems that have the same ABI as macOS on every architecture
 /// mentioned in `ASM_TARGETS`.
-const MACOS_ABI: &[&str] = &["ios", MACOS, "tvos"];
+const MACOS_ABI: &[&str] = &["ios", "macos", "tvos"];
 
-const MACOS: &str = "macos";
 const WINDOWS: &str = "windows";
 
 /// Read an environment variable and tell Cargo that we depend on it.
@@ -420,6 +418,11 @@ fn build_c_code(
     ring_core_prefix: &str,
     use_pregenerated: bool,
 ) {
+    // Xous uses a pure Rust transpiled version of the code base
+    //if &target.os == "xous" && &target.arch != "x86_64" {
+    //    return;
+    //}
+
     println!("cargo:rustc-env=RING_CORE_PREFIX={}", ring_core_prefix);
 
     let asm_target = ASM_TARGETS.iter().find(|asm_target| {
@@ -593,7 +596,7 @@ fn configure_cc(c: &mut cc::Build, target: &Target, include_dir: &Path) {
         let _ = c.flag(f);
     }
 
-    if target.os.as_str() == MACOS {
+    if target.os.as_str() == "macos" {
         // ``-gfull`` is required for Darwin's |-dead_strip|.
         let _ = c.flag("-gfull");
     } else if !compiler.is_like_msvc() {
@@ -607,7 +610,8 @@ fn configure_cc(c: &mut cc::Build, target: &Target, include_dir: &Path) {
     // Allow cross-compiling without a target sysroot for these targets.
     //
     // poly1305_vec.c requires <emmintrin.h> which requires <stdlib.h>.
-    if (target.arch == WASM32) || (target.os == "linux" && target.is_musl && target.arch != X86_64)
+    if (target.arch == "wasm32")
+        || (target.os == "linux" && target.is_musl && target.arch != "x86_64")
     {
         if let Ok(compiler) = c.try_get_compiler() {
             // TODO: Expand this to non-clang compilers in 0.17.0 if practical.
@@ -638,8 +642,8 @@ fn cc_asm(b: &cc::Build, file: &Path, out_file: &Path) -> Command {
 
 fn nasm(file: &Path, arch: &str, include_dir: &Path, out_file: &Path) -> Command {
     let oformat = match arch {
-        x if x == X86_64 => "win64",
-        x if x == X86 => "win32",
+        "x86_64" => "win64",
+        "x86" => "win32",
         _ => panic!("unsupported arch: {}", arch),
     };
 
@@ -746,7 +750,7 @@ fn perlasm(src_dst: &[(PathBuf, PathBuf)], asm_target: &AsmTarget) {
             src.to_string_lossy().into_owned(),
             asm_target.perlasm_format.to_owned(),
         ];
-        if asm_target.arch == X86 {
+        if asm_target.arch == "x86" {
             args.push("-fPIC".into());
             args.push("-DOPENSSL_IA32_SSE2".into());
         }
@@ -878,6 +882,10 @@ fn generate_prefix_symbols_header(
 fn prefix_all_symbols(pp: char, prefix_prefix: &str, prefix: &str) -> String {
     // Rename some nistz256 assembly functions to match the names of their
     // polyfills.
+    #[cfg(any(target_arch="wasm32", target_os="xous"))]
+    static SYMBOLS_TO_RENAME: &[(&str, &str)] = &[
+    ];
+    #[cfg(not(any(target_arch="wasm32", target_os="xous")))]
     static SYMBOLS_TO_RENAME: &[(&str, &str)] = &[
         ("ecp_nistz256_point_double", "p256_point_double"),
         ("ecp_nistz256_point_add", "p256_point_add"),
@@ -888,6 +896,9 @@ fn prefix_all_symbols(pp: char, prefix_prefix: &str, prefix: &str) -> String {
         ("ecp_nistz256_sqr_mont", "p256_sqr_mont"),
     ];
 
+    #[cfg(any(target_arch="wasm32", target_os="xous"))]
+    static SYMBOLS_TO_PREFIX: &[&str] = &[];
+    #[cfg(not(any(target_arch="wasm32", target_os="xous")))]
     static SYMBOLS_TO_PREFIX: &[&str] = &[
         "CRYPTO_memcmp",
         "CRYPTO_poly1305_finish",

@@ -64,9 +64,10 @@
 // #![deny(missing_docs, unused_qualifications, variant_size_differences)]
 // turning this off because c2rust has a lot of unused results
 // #![forbid(unused_results)]
-//#![deny(variant_size_differences)]
+#![deny(variant_size_differences)]
 #![forbid(
-//    unused_results,
+    unused_results,
+    invalid_reference_casting,
     clippy::char_lit_as_u8,
     clippy::fn_to_numeric_cast,
     clippy::fn_to_numeric_cast_with_truncation,
@@ -87,10 +88,6 @@ extern crate alloc;
 
 #[macro_use]
 mod debug;
-
-#[cfg(any(target_arch="wasm32", target_os="xous"))]
-#[macro_use]
-mod prefixed;
 
 #[macro_use]
 mod prefixed;
@@ -152,20 +149,19 @@ mod sealed {
 }
 
 #[cfg(any(target_arch="wasm32", target_os="xous"))]
-mod c2rust {
+pub mod c2rust {
     pub mod aes_nohw;
     pub mod montgomery;
-    mod montgomery_inv;
+    pub mod montgomery_inv;
     pub mod limbs;
-    mod mem;
-    mod poly1305;
-    mod crypto;
-    mod curve25519;
-    mod ecp_nistz;
-    // mod ecp_nistz256;
-    mod gfp_p256;
-    mod gfp_p384;
-    mod p256;
+    pub mod mem;
+    pub mod poly1305;
+    pub mod crypto;
+    pub mod curve25519;
+    pub mod ecp_nistz;
+    pub mod gfp_p256;
+    pub mod gfp_p384;
+    pub mod p256;
 }
 
 #[cfg(target_os="xous")]

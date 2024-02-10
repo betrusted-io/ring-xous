@@ -21,20 +21,19 @@ import os
 import re
 
 RING_C_FILES = [
+    "crypto/curve25519/curve25519.c",
     "crypto/fipsmodule/aes/aes_nohw.c",
     "crypto/fipsmodule/bn/montgomery.c",
     "crypto/fipsmodule/bn/montgomery_inv.c",
+    "crypto/fipsmodule/ec/ecp_nistz.c",
+    "crypto/fipsmodule/ec/gfp_p256.c",
+    "crypto/fipsmodule/ec/gfp_p384.c",
+    "crypto/fipsmodule/ec/p256.c",
     "crypto/limbs/limbs.c",
     "crypto/mem.c",
     "crypto/poly1305/poly1305.c",
     # Other libraries
     "crypto/crypto.c",
-    "crypto/curve25519/curve25519.c",
-    "crypto/fipsmodule/ec/ecp_nistz.c",
-    # "crypto/fipsmodule/ec/ecp_nistz256.c",
-    "crypto/fipsmodule/ec/gfp_p256.c",
-    "crypto/fipsmodule/ec/gfp_p384.c",
-    "crypto/fipsmodule/ec/p256.c",
 ]
 
 
@@ -225,12 +224,12 @@ def run():
 
     print("Add this to the end of `src/lib.rs`:")
 
-    print("mod c2rust {")
+    print("pub mod c2rust {")
     for file in RING_C_FILES:
         mod_name = file.split("/")[-1].split(".")[0]
         rs_file = file.replace(".c", ".rs")
         # print(f"    #[path = \"../{rs_file}\"]")
-        print(f"    mod {mod_name};")
+        print(f"    pub mod {mod_name};")
         with open(rs_file, "r") as src_file:
             with open(f"src/c2rust/{mod_name}.rs", "w") as dest_file:
                 print("#![allow(non_camel_case_types)]", file=dest_file)

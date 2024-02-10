@@ -34,23 +34,9 @@ pub type fiat_p256_int1 = core::ffi::c_schar;
 pub type fiat_p256_limb_t = uint32_t;
 pub type fiat_p256_felem = [uint32_t; 8];
 #[inline]
-unsafe extern "C" fn OPENSSL_memset(
-    mut dst: *mut core::ffi::c_void,
-    mut c: core::ffi::c_int,
-    mut n: size_t,
-) -> *mut core::ffi::c_void {
-    if n == 0 as core::ffi::c_int as core::ffi::c_uint {
-        return dst;
-    }
-    return memset(dst, c, n);
-}
-#[inline]
-unsafe extern "C" fn constant_time_declassify_w(mut v: crypto_word_t) -> crypto_word_t {
-    return value_barrier_w(v);
-}
-#[inline]
-unsafe extern "C" fn constant_time_is_zero_w(mut a: crypto_word_t) -> crypto_word_t {
-    return constant_time_msb_w(!a & a.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint));
+unsafe extern "C" fn value_barrier_w(mut a: crypto_word_t) -> crypto_word_t {
+    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
+    return a;
 }
 #[inline]
 unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t {
@@ -61,9 +47,12 @@ unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t 
     );
 }
 #[inline]
-unsafe extern "C" fn value_barrier_w(mut a: crypto_word_t) -> crypto_word_t {
-    core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
-    return a;
+unsafe extern "C" fn constant_time_is_zero_w(mut a: crypto_word_t) -> crypto_word_t {
+    return constant_time_msb_w(!a & a.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint));
+}
+#[inline]
+unsafe extern "C" fn constant_time_declassify_w(mut v: crypto_word_t) -> crypto_word_t {
+    return value_barrier_w(v);
 }
 #[inline]
 unsafe extern "C" fn OPENSSL_memcpy(
@@ -75,6 +64,17 @@ unsafe extern "C" fn OPENSSL_memcpy(
         return dst;
     }
     return memcpy(dst, src, n);
+}
+#[inline]
+unsafe extern "C" fn OPENSSL_memset(
+    mut dst: *mut core::ffi::c_void,
+    mut c: core::ffi::c_int,
+    mut n: size_t,
+) -> *mut core::ffi::c_void {
+    if n == 0 as core::ffi::c_int as core::ffi::c_uint {
+        return dst;
+    }
+    return memset(dst, c, n);
 }
 #[inline]
 unsafe extern "C" fn recode_scalar_bits(

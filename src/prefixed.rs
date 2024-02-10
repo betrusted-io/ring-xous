@@ -64,6 +64,7 @@ macro_rules! prefixed_export {
     };
 }
 
+#[cfg(not(any(target_arch="wasm32", target_os="xous")))]
 macro_rules! prefixed_item {
     // Calculate the prefixed name in a separate layer of macro expansion
     // because rustc won't currently accept a non-literal expression as
@@ -76,6 +77,34 @@ macro_rules! prefixed_item {
         prefixed_item! {
             $attr
             { concat!(env!("RING_CORE_PREFIX"), stringify!($name)) }
+            { $( $item )+ }
+        }
+    };
+
+    // Output the item.
+    {
+        $attr:ident
+        { $prefixed_name:expr }
+        { $( $item:tt )+ }
+    } => {
+        #[$attr = $prefixed_name]
+        $( $item )+
+    };
+}
+
+#[cfg(any(target_arch="wasm32", target_os="xous"))]
+macro_rules! prefixed_item {
+    // Calculate the prefixed name in a separate layer of macro expansion
+    // because rustc won't currently accept a non-literal expression as
+    // the value for `#[link_name = value]`.
+    {
+        $attr:ident
+        $name:ident
+        { $( $item:tt )+ }
+    } => {
+        prefixed_item! {
+            $attr
+            { concat!(stringify!(), stringify!($name)) }
             { $( $item )+ }
         }
     };
