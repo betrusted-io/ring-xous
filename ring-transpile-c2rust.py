@@ -201,6 +201,7 @@ def run():
             "build/tmp.o",
             "-m32",
             "-Iinclude",
+            "-Ipregenerated/tmp",
             "-UOPENSSL_X86_64",
             "-U__x86_64",
             "-D__xous__",

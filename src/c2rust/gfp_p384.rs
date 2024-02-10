@@ -3,13 +3,13 @@
 #![allow(non_upper_case_globals)]
 
 extern "C" {
-    fn LIMBS_shl_mod(r: *mut Limb, a: *const Limb, m: *const Limb, num_limbs: size_t);
     fn __assert_fail(
         __assertion: *const core::ffi::c_char,
         __file: *const core::ffi::c_char,
         __line: core::ffi::c_uint,
         __function: *const core::ffi::c_char,
     ) -> !;
+    fn LIMBS_shl_mod(r: *mut Limb, a: *const Limb, m: *const Limb, num_limbs: size_t);
     fn LIMBS_sub_mod(
         r: *mut Limb,
         a: *const Limb,

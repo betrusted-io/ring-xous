@@ -143,39 +143,3 @@ pub unsafe extern "C" fn bn_from_montgomery_in_place(
     }
     return 1 as core::ffi::c_int;
 }
-#[no_mangle]
-pub unsafe extern "C" fn bn_mul_mont(
-    mut rp: *mut BN_ULONG,
-    mut ap: *const BN_ULONG,
-    mut bp: *const BN_ULONG,
-    mut np: *const BN_ULONG,
-    mut n0: *const BN_ULONG,
-    mut num: size_t,
-) {
-    let vla = (2 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(num) as usize;
-    let mut tmp: alloc::vec::Vec<Limb> = alloc::vec::from_elem(0, vla);
-    let mut i: size_t = 0 as core::ffi::c_int as size_t;
-    while i < num {
-        *tmp.as_mut_ptr().offset(i as isize) = 0 as core::ffi::c_int as Limb;
-        i = i.wrapping_add(1);
-    }
-    let mut i_0: size_t = 0 as core::ffi::c_int as size_t;
-    while i_0 < num {
-        *tmp.as_mut_ptr().offset(num.wrapping_add(i_0) as isize) = limbs_mul_add_limb(
-            tmp.as_mut_ptr().offset(i_0 as isize),
-            ap,
-            *bp.offset(i_0 as isize),
-            num,
-        );
-        i_0 = i_0.wrapping_add(1);
-    }
-    bn_from_montgomery_in_place(
-        rp,
-        num,
-        tmp.as_mut_ptr(),
-        (2 as core::ffi::c_int as core::ffi::c_uint).wrapping_mul(num),
-        np,
-        num,
-        n0,
-    );
-}
