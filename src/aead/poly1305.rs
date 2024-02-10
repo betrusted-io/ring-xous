@@ -21,6 +21,7 @@ use crate::{c, cpu};
 /// A Poly1305 key.
 pub(super) struct Key {
     key_and_nonce: [u8; KEY_LEN],
+    cpu_features: cpu::Features,
 }
 
 pub(super) const BLOCK_LEN: usize = 16;
@@ -28,8 +29,11 @@ pub(super) const KEY_LEN: usize = 2 * BLOCK_LEN;
 
 impl Key {
     #[inline]
-    pub(super) fn new(key_and_nonce: [u8; KEY_LEN]) -> Self {
-        Self { key_and_nonce }
+    pub(super) fn new(key_and_nonce: [u8; KEY_LEN], cpu_features: cpu::Features) -> Self {
+        Self {
+            key_and_nonce,
+            cpu_features,
+        }
     }
 }
 
@@ -75,7 +79,12 @@ macro_rules! dispatch {
 
 impl Context {
     #[inline]
-    pub(super) fn from_key(Key { key_and_nonce }: Key, cpu_features: cpu::Features) -> Self {
+    pub(super) fn from_key(
+        Key {
+            key_and_nonce,
+            cpu_features,
+        }: Key,
+    ) -> Self {
         let mut ctx = Self {
             state: poly1305_state([0u8; OPAQUE_LEN]),
             cpu_features,
@@ -114,8 +123,8 @@ impl Context {
 ///
 /// This is used by chacha20_poly1305_openssh and the standalone
 /// poly1305 test vectors.
-pub(super) fn sign(key: Key, input: &[u8], cpu_features: cpu::Features) -> Tag {
-    let mut ctx = Context::from_key(key, cpu_features);
+pub(super) fn sign(key: Key, input: &[u8]) -> Tag {
+    let mut ctx = Context::from_key(key);
     ctx.update(input);
     ctx.finish()
 }
@@ -135,8 +144,8 @@ mod tests {
             let key: &[u8; KEY_LEN] = key.as_slice().try_into().unwrap();
             let input = test_case.consume_bytes("Input");
             let expected_mac = test_case.consume_bytes("MAC");
-            let key = Key::new(*key);
-            let Tag(actual_mac) = sign(key, &input, cpu_features);
+            let key = Key::new(*key, cpu_features);
+            let Tag(actual_mac) = sign(key, &input);
             assert_eq!(expected_mac, actual_mac.as_ref());
 
             Ok(())

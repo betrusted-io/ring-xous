@@ -75,6 +75,8 @@ pub struct OwnedModulus<M> {
     n0: N0,
 
     len_bits: BitLength,
+
+    cpu_features: cpu::Features,
 }
 
 impl<M: PublicModulus> Clone for OwnedModulus<M> {
@@ -83,12 +85,16 @@ impl<M: PublicModulus> Clone for OwnedModulus<M> {
             limbs: self.limbs.clone(),
             n0: self.n0,
             len_bits: self.len_bits,
+            cpu_features: self.cpu_features,
         }
     }
 }
 
 impl<M> OwnedModulus<M> {
-    pub(crate) fn from_be_bytes(input: untrusted::Input) -> Result<Self, error::KeyRejected> {
+    pub(crate) fn from_be_bytes(
+        input: untrusted::Input,
+        cpu_features: cpu::Features,
+    ) -> Result<Self, error::KeyRejected> {
         let n = BoxedLimbs::positive_minimal_width_from_be_bytes(input)?;
         if n.len() > MODULUS_MAX_LIMBS {
             return Err(error::KeyRejected::too_large());
@@ -129,6 +135,7 @@ impl<M> OwnedModulus<M> {
             limbs: n,
             n0,
             len_bits,
+            cpu_features,
         })
     }
 
@@ -151,13 +158,13 @@ impl<M> OwnedModulus<M> {
             encoding: PhantomData,
         })
     }
-    pub(crate) fn modulus(&self, cpu_features: cpu::Features) -> Modulus<M> {
+    pub fn modulus(&self) -> Modulus<M> {
         Modulus {
             limbs: &self.limbs,
             n0: self.n0,
             len_bits: self.len_bits,
             m: PhantomData,
-            cpu_features,
+            cpu_features: self.cpu_features,
         }
     }
 

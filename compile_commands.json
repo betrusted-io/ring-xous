@@ -12,6 +12,24 @@
             "-D__xous__",
             "-D__riscv",
             "-D__riscv_xlen=32",
+            "crypto/curve25519/curve25519.c"
+        ],
+        "directory": "/mnt/f/code/ring-xous",
+        "file": "crypto/curve25519/curve25519.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "build/tmp.o",
+            "-m32",
+            "-Iinclude",
+            "-UOPENSSL_X86_64",
+            "-U__x86_64",
+            "-D__xous__",
+            "-D__riscv",
+            "-D__riscv_xlen=32",
             "crypto/fipsmodule/aes/aes_nohw.c"
         ],
         "directory": "/mnt/f/code/ring-xous",
@@ -52,96 +70,6 @@
         ],
         "directory": "/mnt/f/code/ring-xous",
         "file": "crypto/fipsmodule/bn/montgomery_inv.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
-            "-o",
-            "build/tmp.o",
-            "-m32",
-            "-Iinclude",
-            "-UOPENSSL_X86_64",
-            "-U__x86_64",
-            "-D__xous__",
-            "-D__riscv",
-            "-D__riscv_xlen=32",
-            "crypto/limbs/limbs.c"
-        ],
-        "directory": "/mnt/f/code/ring-xous",
-        "file": "crypto/limbs/limbs.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
-            "-o",
-            "build/tmp.o",
-            "-m32",
-            "-Iinclude",
-            "-UOPENSSL_X86_64",
-            "-U__x86_64",
-            "-D__xous__",
-            "-D__riscv",
-            "-D__riscv_xlen=32",
-            "crypto/mem.c"
-        ],
-        "directory": "/mnt/f/code/ring-xous",
-        "file": "crypto/mem.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
-            "-o",
-            "build/tmp.o",
-            "-m32",
-            "-Iinclude",
-            "-UOPENSSL_X86_64",
-            "-U__x86_64",
-            "-D__xous__",
-            "-D__riscv",
-            "-D__riscv_xlen=32",
-            "crypto/poly1305/poly1305.c"
-        ],
-        "directory": "/mnt/f/code/ring-xous",
-        "file": "crypto/poly1305/poly1305.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
-            "-o",
-            "build/tmp.o",
-            "-m32",
-            "-Iinclude",
-            "-UOPENSSL_X86_64",
-            "-U__x86_64",
-            "-D__xous__",
-            "-D__riscv",
-            "-D__riscv_xlen=32",
-            "crypto/crypto.c"
-        ],
-        "directory": "/mnt/f/code/ring-xous",
-        "file": "crypto/crypto.c"
-    },
-    {
-        "arguments": [
-            "cc",
-            "-c",
-            "-o",
-            "build/tmp.o",
-            "-m32",
-            "-Iinclude",
-            "-UOPENSSL_X86_64",
-            "-U__x86_64",
-            "-D__xous__",
-            "-D__riscv",
-            "-D__riscv_xlen=32",
-            "crypto/curve25519/curve25519.c"
-        ],
-        "directory": "/mnt/f/code/ring-xous",
-        "file": "crypto/curve25519/curve25519.c"
     },
     {
         "arguments": [
@@ -214,5 +142,77 @@
         ],
         "directory": "/mnt/f/code/ring-xous",
         "file": "crypto/fipsmodule/ec/p256.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "build/tmp.o",
+            "-m32",
+            "-Iinclude",
+            "-UOPENSSL_X86_64",
+            "-U__x86_64",
+            "-D__xous__",
+            "-D__riscv",
+            "-D__riscv_xlen=32",
+            "crypto/limbs/limbs.c"
+        ],
+        "directory": "/mnt/f/code/ring-xous",
+        "file": "crypto/limbs/limbs.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "build/tmp.o",
+            "-m32",
+            "-Iinclude",
+            "-UOPENSSL_X86_64",
+            "-U__x86_64",
+            "-D__xous__",
+            "-D__riscv",
+            "-D__riscv_xlen=32",
+            "crypto/mem.c"
+        ],
+        "directory": "/mnt/f/code/ring-xous",
+        "file": "crypto/mem.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "build/tmp.o",
+            "-m32",
+            "-Iinclude",
+            "-UOPENSSL_X86_64",
+            "-U__x86_64",
+            "-D__xous__",
+            "-D__riscv",
+            "-D__riscv_xlen=32",
+            "crypto/poly1305/poly1305.c"
+        ],
+        "directory": "/mnt/f/code/ring-xous",
+        "file": "crypto/poly1305/poly1305.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-o",
+            "build/tmp.o",
+            "-m32",
+            "-Iinclude",
+            "-UOPENSSL_X86_64",
+            "-U__x86_64",
+            "-D__xous__",
+            "-D__riscv",
+            "-D__riscv_xlen=32",
+            "crypto/crypto.c"
+        ],
+        "directory": "/mnt/f/code/ring-xous",
+        "file": "crypto/crypto.c"
     }
 ]

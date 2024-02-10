@@ -285,7 +285,7 @@ impl KeyPair {
         )?;
 
         let n_one = public_key.inner().n().oneRR();
-        let n = &public_key.inner().n().value(cpu_features);
+        let n = &public_key.inner().n().value();
 
         // 6.4.1.4.3 says to skip 6.4.1.2.1 Step 2.
 
@@ -338,7 +338,7 @@ impl KeyPair {
         // First, validate `2**half_n_bits < d`. Since 2**half_n_bits has a bit
         // length of half_n_bits + 1, this check gives us 2**half_n_bits <= d,
         // and knowing d is odd makes the inequality strict.
-        let d = bigint::OwnedModulus::<D>::from_be_bytes(d)
+        let d = bigint::OwnedModulus::<D>::from_be_bytes(d, cpu_features)
             .map_err(|_| error::KeyRejected::invalid_component())?;
         if !(n_bits.half_rounded_up() < d.len_bits()) {
             return Err(KeyRejected::inconsistent_components());
@@ -350,7 +350,7 @@ impl KeyPair {
 
         // Step 6.b is omitted as explained above.
 
-        let pm = &p.modulus.modulus(cpu_features);
+        let pm = &p.modulus.modulus();
 
         // 6.4.1.4.3 - Step 7.
 
@@ -371,8 +371,8 @@ impl KeyPair {
 
         // This should never fail since `n` and `e` were validated above.
 
-        let p = PrivateCrtPrime::new(p, dP, cpu_features)?;
-        let q = PrivateCrtPrime::new(q, dQ, cpu_features)?;
+        let p = PrivateCrtPrime::new(p, dP)?;
+        let q = PrivateCrtPrime::new(q, dQ)?;
 
         Ok(Self {
             p,
@@ -416,7 +416,7 @@ impl<M> PrivatePrime<M> {
         n_bits: BitLength,
         cpu_features: cpu::Features,
     ) -> Result<Self, KeyRejected> {
-        let p = bigint::OwnedModulus::from_be_bytes(p)?;
+        let p = bigint::OwnedModulus::from_be_bytes(p, cpu_features)?;
 
         // 5.c / 5.g:
         //
@@ -438,7 +438,7 @@ impl<M> PrivatePrime<M> {
 
         // Steps 5.e and 5.f are omitted as explained above.
 
-        let oneRR = bigint::One::newRR(&p.modulus(cpu_features));
+        let oneRR = bigint::One::newRR(&p.modulus());
 
         Ok(Self { modulus: p, oneRR })
     }
@@ -453,12 +453,8 @@ struct PrivateCrtPrime<M> {
 impl<M> PrivateCrtPrime<M> {
     /// Constructs a `PrivateCrtPrime` from the private prime `p` and `dP` where
     /// dP == d % (p - 1).
-    fn new(
-        p: PrivatePrime<M>,
-        dP: untrusted::Input,
-        cpu_features: cpu::Features,
-    ) -> Result<Self, KeyRejected> {
-        let m = &p.modulus.modulus(cpu_features);
+    fn new(p: PrivatePrime<M>, dP: untrusted::Input) -> Result<Self, KeyRejected> {
+        let m = &p.modulus.modulus();
         // [NIST SP-800-56B rev. 1] 6.4.1.4.3 - Steps 7.a & 7.b.
         let dP = bigint::PrivateExponent::from_be_bytes_padded(dP, m)
             .map_err(|error::Unspecified| KeyRejected::inconsistent_components())?;
@@ -486,9 +482,8 @@ fn elem_exp_consttime<M>(
     c: &bigint::Elem<N>,
     p: &PrivateCrtPrime<M>,
     other_prime_len_bits: BitLength,
-    cpu_features: cpu::Features,
 ) -> Result<bigint::Elem<M>, error::Unspecified> {
-    let m = &p.modulus.modulus(cpu_features);
+    let m = &p.modulus.modulus();
     let c_mod_m = bigint::elem_reduced(c, m, other_prime_len_bits);
     let c_mod_m = bigint::elem_mul(p.oneRRR.as_ref(), c_mod_m, m);
     bigint::elem_exp_consttime(c_mod_m, &p.exponent, m)
@@ -528,8 +523,6 @@ impl KeyPair {
         msg: &[u8],
         signature: &mut [u8],
     ) -> Result<(), error::Unspecified> {
-        let cpu_features = cpu::features();
-
         if signature.len() != self.public().modulus_len() {
             return Err(error::Unspecified);
         }
@@ -544,7 +537,7 @@ impl KeyPair {
         // with Garner's algorithm.
 
         // Steps 1 and 2.
-        let m = self.private_exponentiate(signature, cpu_features)?;
+        let m = self.private_exponentiate(signature)?;
 
         // Step 3.
         m.fill_be_bytes(signature);
@@ -559,17 +552,13 @@ impl KeyPair {
     /// leaked that would endanger the private key.
     ///
     /// Panics if `in_out` is not `self.public().modulus_len()`.
-    fn private_exponentiate(
-        &self,
-        base: &[u8],
-        cpu_features: cpu::Features,
-    ) -> Result<bigint::Elem<N>, error::Unspecified> {
+    fn private_exponentiate(&self, base: &[u8]) -> Result<bigint::Elem<N>, error::Unspecified> {
         assert_eq!(base.len(), self.public().modulus_len());
 
         // RFC 8017 Section 5.1.2: RSADP, using the Chinese Remainder Theorem
         // with Garner's algorithm.
 
-        let n = &self.public.inner().n().value(cpu_features);
+        let n = &self.public.inner().n().value();
         let n_one = self.public.inner().n().oneRR();
 
         // Step 1. The value zero is also rejected.
@@ -580,14 +569,14 @@ impl KeyPair {
 
         // Step 2.b.i.
         let q_bits = self.q.modulus.len_bits();
-        let m_1 = elem_exp_consttime(&c, &self.p, q_bits, cpu_features)?;
-        let m_2 = elem_exp_consttime(&c, &self.q, self.p.modulus.len_bits(), cpu_features)?;
+        let m_1 = elem_exp_consttime(&c, &self.p, q_bits)?;
+        let m_2 = elem_exp_consttime(&c, &self.q, self.p.modulus.len_bits())?;
 
         // Step 2.b.ii isn't needed since there are only two primes.
 
         // Step 2.b.iii.
         let h = {
-            let p = &self.p.modulus.modulus(cpu_features);
+            let p = &self.p.modulus.modulus();
             let m_2 = bigint::elem_reduced_once(&m_2, p, q_bits);
             let m_1_minus_m_2 = bigint::elem_sub(m_1, &m_2, p);
             bigint::elem_mul(&self.qInv, m_1_minus_m_2, p)
@@ -616,7 +605,7 @@ impl KeyPair {
         // minimum value, since the relationship of `e` to `d`, `p`, and `q` is
         // not verified during `KeyPair` construction.
         {
-            let verify = self.public.inner().exponentiate_elem(&m, cpu_features);
+            let verify = self.public.inner().exponentiate_elem(&m);
             bigint::elem_verify_equal_consttime(&verify, &c)?;
         }
 
@@ -634,7 +623,6 @@ mod tests {
 
     #[test]
     fn test_rsakeypair_private_exponentiate() {
-        let cpu = cpu::features();
         test::run(
             test_file!("keypair_private_exponentiate_tests.txt"),
             |section, test_case| {
@@ -657,7 +645,7 @@ mod tests {
                     let mut padded = vec![0; key.public.modulus_len()];
                     let zeroes = padded.len() - test_case.len();
                     padded[zeroes..].copy_from_slice(test_case);
-                    let _: bigint::Elem<_> = key.private_exponentiate(&padded, cpu).unwrap();
+                    let _: bigint::Elem<_> = key.private_exponentiate(&padded).unwrap();
                 }
                 Ok(())
             },

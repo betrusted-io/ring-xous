@@ -58,12 +58,6 @@
     non_snake_case,
     unsafe_code
 )]
-// `#[derive(...)]` uses `trivial_numeric_casts` and `unused_qualifications`
-// internally.
-// rkyv(xous) is not compatible with unused_qualifications
-// #![deny(missing_docs, unused_qualifications, variant_size_differences)]
-// turning this off because c2rust has a lot of unused results
-// #![forbid(unused_results)]
 #![deny(variant_size_differences)]
 #![forbid(
     unused_results,
@@ -146,40 +140,4 @@ mod sealed {
     // impl sealed::Sealed for MyType {}
     // ```
     pub trait Sealed {}
-}
-
-#[cfg(any(target_arch="wasm32", target_os="xous"))]
-pub mod c2rust {
-    pub mod aes_nohw;
-    pub mod montgomery;
-    pub mod montgomery_inv;
-    pub mod limbs;
-    pub mod mem;
-    pub mod poly1305;
-    pub mod crypto;
-    pub mod curve25519;
-    pub mod ecp_nistz;
-    pub mod gfp_p256;
-    pub mod gfp_p384;
-    pub mod p256;
-}
-
-#[cfg(target_os="xous")]
-mod xous_rand;
-#[cfg(target_os="xous")]
-pub mod xous_test;
-
-#[cfg(any(target_arch="wasm32", target_os="xous"))]
-type c_char = i8;
-#[cfg(any(target_arch="wasm32", target_os="xous"))]
-type c_uint = u32;
-#[export_name = "__assert_fail"]
-#[cfg(any(target_arch="wasm32", target_os="xous"))]
-pub unsafe extern "C" fn __assert_fail(
-    __assertion: *const c_char,
-    __file: *const c_char,
-    __line: c_uint,
-    __function: *const c_char,
-) -> ! {
-    panic!("assert fail");
 }

@@ -339,6 +339,10 @@ fn ring_build_rs_main() {
     };
     let pregenerated = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap()).join(PREGENERATED);
 
+    // Xous uses a pure Rust transpiled version of the code base
+    if &target.os == "xous" && &target.arch != "x86_64" {
+        return;
+    }
     build_c_code(
         &target,
         pregenerated,
@@ -418,11 +422,6 @@ fn build_c_code(
     ring_core_prefix: &str,
     use_pregenerated: bool,
 ) {
-    // Xous uses a pure Rust transpiled version of the code base
-    //if &target.os == "xous" && &target.arch != "x86_64" {
-    //    return;
-    //}
-
     println!("cargo:rustc-env=RING_CORE_PREFIX={}", ring_core_prefix);
 
     let asm_target = ASM_TARGETS.iter().find(|asm_target| {

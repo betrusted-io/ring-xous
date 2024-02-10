@@ -467,22 +467,6 @@ mod tests {
         encoding: PhantomData,
     };
 
-    trait Convert<E: Encoding> {
-        fn convert(self, cops: &CommonOps) -> Elem<E>;
-    }
-
-    impl Convert<R> for Elem<R> {
-        fn convert(self, _cops: &CommonOps) -> Elem<R> {
-            self
-        }
-    }
-
-    impl Convert<Unencoded> for Elem<R> {
-        fn convert(self, cops: &CommonOps) -> Elem<Unencoded> {
-            cops.elem_unencoded(&self)
-        }
-    }
-
     fn q_minus_n_plus_n_equals_0_test(ops: &PublicScalarOps) {
         let cops = ops.scalar_ops.common;
         let mut x = ops.q_minus_n;
@@ -818,7 +802,7 @@ mod tests {
 
             let a = consume_jacobian_point(ops, test_case, "a");
             let b = consume_jacobian_point(ops, test_case, "b");
-            let r_expected: TestPoint<R> = consume_point(ops, test_case, "r");
+            let r_expected = consume_point(ops, test_case, "r");
 
             let r_actual = ops.common.point_sum(&a, &b);
             assert_point_actual_equals_expected(ops, &r_actual, &r_expected);
@@ -859,7 +843,7 @@ mod tests {
 
             let a = consume_jacobian_point(ops, test_case, "a");
             let b = consume_affine_point(ops, test_case, "b");
-            let r_expected: TestPoint<R> = consume_point(ops, test_case, "r");
+            let r_expected = consume_point(ops, test_case, "r");
 
             let mut r_actual = Point::new_at_infinity();
             unsafe {
@@ -914,7 +898,7 @@ mod tests {
             assert_eq!(section, "");
 
             let a = consume_jacobian_point(ops, test_case, "a");
-            let r_expected: TestPoint<R> = consume_point(ops, test_case, "r");
+            let r_expected = consume_point(ops, test_case, "r");
 
             let mut r_actual = Point::new_at_infinity();
             unsafe {
@@ -1022,20 +1006,18 @@ mod tests {
         test::run(test_file, |section, test_case| {
             assert_eq!(section, "");
             let g_scalar = consume_scalar(ops.common, test_case, "g_scalar");
-            let expected_result: TestPoint<Unencoded> = consume_point(ops, test_case, "r");
+            let expected_result = consume_point(ops, test_case, "r");
             let actual_result = f(&g_scalar);
             assert_point_actual_equals_expected(ops, &actual_result, &expected_result);
             Ok(())
         })
     }
 
-    fn assert_point_actual_equals_expected<E: Encoding>(
+    fn assert_point_actual_equals_expected(
         ops: &PrivateKeyOps,
         actual_point: &Point,
-        expected_point: &TestPoint<E>,
-    ) where
-        Elem<R>: Convert<E>,
-    {
+        expected_point: &TestPoint,
+    ) {
         let cops = ops.common;
         let actual_x = &cops.point_x(actual_point);
         let actual_y = &cops.point_y(actual_point);
@@ -1053,9 +1035,6 @@ mod tests {
                     let zzz_inv = cops.elem_product(actual_z, &zzzz_inv);
                     cops.elem_product(actual_y, &zzz_inv)
                 };
-
-                let x_aff = x_aff.convert(cops);
-                let y_aff = y_aff.convert(cops);
 
                 assert_elems_are_equal(cops, &x_aff, expected_x);
                 assert_elems_are_equal(cops, &y_aff, expected_y);
@@ -1107,17 +1086,13 @@ mod tests {
             .copy_from_slice(&r.limbs[..ops.num_limbs]);
     }
 
-    enum TestPoint<E: Encoding> {
+    enum TestPoint {
         Infinity,
-        Affine(Elem<E>, Elem<E>),
+        Affine(Elem<R>, Elem<R>),
     }
 
-    fn consume_point<E: Encoding>(
-        ops: &PrivateKeyOps,
-        test_case: &mut test::TestCase,
-        name: &str,
-    ) -> TestPoint<E> {
-        fn consume_point_elem<E: Encoding>(ops: &CommonOps, elems: &[&str], i: usize) -> Elem<E> {
+    fn consume_point(ops: &PrivateKeyOps, test_case: &mut test::TestCase, name: &str) -> TestPoint {
+        fn consume_point_elem(ops: &CommonOps, elems: &[&str], i: usize) -> Elem<R> {
             let bytes = test::from_hex(elems[i]).unwrap();
             let bytes = untrusted::Input::from(&bytes);
             let unencoded: Elem<Unencoded> =
@@ -1141,7 +1116,7 @@ mod tests {
         TestPoint::Affine(x, y)
     }
 
-    fn assert_elems_are_equal<E: Encoding>(ops: &CommonOps, a: &Elem<E>, b: &Elem<E>) {
+    fn assert_elems_are_equal(ops: &CommonOps, a: &Elem<R>, b: &Elem<R>) {
         assert_limbs_are_equal(ops, &a.limbs, &b.limbs)
     }
 
@@ -1154,10 +1129,9 @@ mod tests {
             let mut actual_s = alloc::string::String::new();
             let mut expected_s = alloc::string::String::new();
             for j in 0..ops.num_limbs {
-                let width = LIMB_BITS / 4;
-                let formatted = format!("{:0width$x}", actual[ops.num_limbs - j - 1]);
+                let formatted = format!("{:016x}", actual[ops.num_limbs - j - 1]);
                 actual_s.push_str(&formatted);
-                let formatted = format!("{:0width$x}", expected[ops.num_limbs - j - 1]);
+                let formatted = format!("{:016x}", expected[ops.num_limbs - j - 1]);
                 expected_s.push_str(&formatted);
             }
             panic!(

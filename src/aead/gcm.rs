@@ -19,11 +19,13 @@ use super::{
 use crate::{cpu, polyfill::ArraySplitMap};
 use core::ops::BitXorAssign;
 
+#[cfg(not(target_arch = "aarch64"))]
 mod gcm_nohw;
 
 #[derive(Clone)]
 pub struct Key {
     h_table: HTable,
+    cpu_features: cpu::Features,
 }
 
 impl Key {
@@ -34,6 +36,7 @@ impl Key {
             h_table: HTable {
                 Htable: [u128 { hi: 0, lo: 0 }; HTABLE_LEN],
             },
+            cpu_features,
         };
         let h_table = &mut key.h_table;
 
@@ -73,6 +76,7 @@ impl Key {
                 }
             }
 
+            #[cfg(not(target_arch = "aarch64"))]
             Implementation::Fallback => {
                 h_table.Htable[0] = gcm_nohw::init(h);
             }
@@ -88,13 +92,13 @@ pub struct Context {
 }
 
 impl Context {
-    pub(crate) fn new(key: &Key, aad: Aad<&[u8]>, cpu_features: cpu::Features) -> Self {
+    pub(crate) fn new(key: &Key, aad: Aad<&[u8]>) -> Self {
         let mut ctx = Self {
             inner: ContextInner {
                 Xi: Xi(Block::zero()),
                 Htable: key.h_table.clone(),
             },
-            cpu_features,
+            cpu_features: key.cpu_features,
         };
 
         for ad in aad.0.chunks(BLOCK_LEN) {
@@ -183,6 +187,7 @@ impl Context {
                 }
             }
 
+            #[cfg(not(target_arch = "aarch64"))]
             Implementation::Fallback => {
                 gcm_nohw::ghash(xi, h_table.Htable[0], input);
             }
@@ -224,6 +229,7 @@ impl Context {
                 }
             }
 
+            #[cfg(not(target_arch = "aarch64"))]
             Implementation::Fallback => {
                 gcm_nohw::gmult(xi, h_table.Htable[0]);
             }
@@ -301,6 +307,7 @@ enum Implementation {
     #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
     NEON,
 
+    #[cfg(not(target_arch = "aarch64"))]
     Fallback,
 }
 
@@ -315,28 +322,34 @@ fn detect_implementation(cpu_features: cpu::Features) -> Implementation {
     )))]
     let _cpu_features = cpu_features;
 
-    #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+    #[cfg(any(
+        target_arch = "aarch64",
+        target_arch = "arm",
+        target_arch = "x86_64",
+        target_arch = "x86"
+    ))]
     {
-        if cpu::arm::PMULL.available(cpu_features) {
-            return Implementation::CLMUL;
-        }
-    }
-
-    #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-    {
-        if cpu::intel::FXSR.available(cpu_features) && cpu::intel::PCLMULQDQ.available(cpu_features)
+        if (cpu::intel::FXSR.available(cpu_features)
+            && cpu::intel::PCLMULQDQ.available(cpu_features))
+            || cpu::arm::PMULL.available(cpu_features)
         {
             return Implementation::CLMUL;
         }
     }
 
-    #[cfg(any(target_arch = "aarch64", target_arch = "arm"))]
+    #[cfg(target_arch = "arm")]
     {
         if cpu::arm::NEON.available(cpu_features) {
             return Implementation::NEON;
         }
     }
 
+    #[cfg(target_arch = "aarch64")]
+    {
+        return Implementation::NEON;
+    }
+
+    #[cfg(not(target_arch = "aarch64"))]
     Implementation::Fallback
 }
 
