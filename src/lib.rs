@@ -60,7 +60,7 @@
 )]
 #![deny(variant_size_differences)]
 #![forbid(
-    unused_results,
+    // unused_results,
     invalid_reference_casting,
     clippy::char_lit_as_u8,
     clippy::fn_to_numeric_cast,
@@ -140,4 +140,42 @@ mod sealed {
     // impl sealed::Sealed for MyType {}
     // ```
     pub trait Sealed {}
+}
+
+#[cfg(any(target_arch="wasm32", target_os="xous"))]
+pub mod c2rust {
+    pub mod aes_nohw;
+    pub mod montgomery;
+    pub mod montgomery_inv;
+    pub mod limbs;
+    pub mod mem;
+    pub mod poly1305;
+    pub mod crypto;
+    pub mod curve25519;
+    pub mod ecp_nistz;
+    pub mod gfp_p256;
+    pub mod gfp_p384;
+    pub mod p256;
+}
+
+// Dependencies for testing: these need to be brought up to date, they have not
+// yet been ported since the transition to 0.7
+//#[cfg(target_os="xous")]
+//mod xous_rand;
+//#[cfg(target_os="xous")]
+//pub mod xous_test;
+
+#[cfg(any(target_arch="wasm32", target_os="xous"))]
+type c_char = i8;
+#[cfg(any(target_arch="wasm32", target_os="xous"))]
+type c_uint = u32;
+#[export_name = "__assert_fail"]
+#[cfg(any(target_arch="wasm32", target_os="xous"))]
+pub unsafe extern "C" fn __assert_fail(
+    __assertion: *const c_char,
+    __file: *const c_char,
+    __line: c_uint,
+    __function: *const c_char,
+) -> ! {
+    panic!("assert fail");
 }

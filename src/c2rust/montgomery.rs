@@ -22,28 +22,28 @@ pub type Limb = crypto_word_t;
 pub type Carry = Limb;
 pub type DoubleLimb = uint64_t;
 #[inline]
-unsafe extern "C" fn value_barrier_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn value_barrier_w(a: crypto_word_t) -> crypto_word_t {
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
     return a;
 }
 #[inline]
 unsafe extern "C" fn constant_time_select_w(
     mut mask: crypto_word_t,
-    mut a: crypto_word_t,
-    mut b: crypto_word_t,
+    a: crypto_word_t,
+    b: crypto_word_t,
 ) -> crypto_word_t {
     mask = value_barrier_w(mask);
     return mask & a | !mask & b;
 }
 #[inline]
 unsafe extern "C" fn limb_sbb(
-    mut r: *mut Limb,
-    mut a: Limb,
-    mut b: Limb,
-    mut borrow_in: Carry,
+    r: *mut Limb,
+    a: Limb,
+    b: Limb,
+    borrow_in: Carry,
 ) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb)
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb)
         .wrapping_sub(b as u64)
         .wrapping_sub(borrow_in as u64);
     *r = x as Limb;
@@ -51,19 +51,19 @@ unsafe extern "C" fn limb_sbb(
     return ret;
 }
 #[inline]
-unsafe extern "C" fn limb_sub(mut r: *mut Limb, mut a: Limb, mut b: Limb) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
+unsafe extern "C" fn limb_sub(r: *mut Limb, a: Limb, b: Limb) -> Carry {
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
     *r = x as Limb;
     ret = (x >> 32 as core::ffi::c_uint & 1 as core::ffi::c_int as u64) as Carry;
     return ret;
 }
 #[inline]
 unsafe extern "C" fn limbs_sub(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
+    num_limbs: size_t,
 ) -> Carry {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -97,13 +97,13 @@ unsafe extern "C" fn limbs_sub(
 }
 #[no_mangle]
 pub unsafe extern "C" fn bn_from_montgomery_in_place(
-    mut r: *mut BN_ULONG,
-    mut num_r: size_t,
+    r: *mut BN_ULONG,
+    num_r: size_t,
     mut a: *mut BN_ULONG,
-    mut num_a: size_t,
-    mut n: *const BN_ULONG,
-    mut num_n: size_t,
-    mut n0_: *const BN_ULONG,
+    num_a: size_t,
+    n: *const BN_ULONG,
+    num_n: size_t,
+    n0_: *const BN_ULONG,
 ) -> core::ffi::c_int {
     if num_n == 0 as core::ffi::c_int as core::ffi::c_uint
         || num_r != num_n
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn bn_from_montgomery_in_place(
     {
         return 0 as core::ffi::c_int;
     }
-    let mut n0: BN_ULONG = *n0_.offset(0 as core::ffi::c_int as isize);
+    let n0: BN_ULONG = *n0_.offset(0 as core::ffi::c_int as isize);
     let mut carry: BN_ULONG = 0 as core::ffi::c_int as BN_ULONG;
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < num_n {

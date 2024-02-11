@@ -34,9 +34,9 @@ static mut N_N0: [BN_ULONG; 2] = [
 ];
 #[no_mangle]
 pub unsafe extern "C" fn p256_scalar_mul_mont(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
 ) {
     bn_mul_mont(
         r,
@@ -49,9 +49,9 @@ pub unsafe extern "C" fn p256_scalar_mul_mont(
 }
 #[no_mangle]
 pub unsafe extern "C" fn p256_scalar_sqr_rep_mont(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut rep: Limb,
+    r: *mut Limb,
+    a: *const Limb,
+    rep: Limb,
 ) {
     p256_scalar_mul_mont(r, a, a);
     let mut i: Limb = 1 as core::ffi::c_int as Limb;

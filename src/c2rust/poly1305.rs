@@ -40,7 +40,7 @@ pub struct poly1305_state_st {
     pub key: [uint8_t; 16],
 }
 #[inline]
-unsafe extern "C" fn CRYPTO_store_u32_le(mut out: *mut core::ffi::c_void, mut v: uint32_t) {
+unsafe extern "C" fn CRYPTO_store_u32_le(out: *mut core::ffi::c_void, mut v: uint32_t) {
     OPENSSL_memcpy(
         out,
         &mut v as *mut uint32_t as *const core::ffi::c_void,
@@ -48,7 +48,7 @@ unsafe extern "C" fn CRYPTO_store_u32_le(mut out: *mut core::ffi::c_void, mut v:
     );
 }
 #[inline]
-unsafe extern "C" fn CRYPTO_load_u32_le(mut in_0: *const core::ffi::c_void) -> uint32_t {
+unsafe extern "C" fn CRYPTO_load_u32_le(in_0: *const core::ffi::c_void) -> uint32_t {
     let mut v: uint32_t = 0;
     OPENSSL_memcpy(
         &mut v as *mut uint32_t as *mut core::ffi::c_void,
@@ -59,39 +59,39 @@ unsafe extern "C" fn CRYPTO_load_u32_le(mut in_0: *const core::ffi::c_void) -> u
 }
 #[inline]
 unsafe extern "C" fn OPENSSL_memcpy(
-    mut dst: *mut core::ffi::c_void,
-    mut src: *const core::ffi::c_void,
-    mut n: size_t,
+    dst: *mut core::ffi::c_void,
+    src: *const core::ffi::c_void,
+    n: size_t,
 ) -> *mut core::ffi::c_void {
     if n == 0 as core::ffi::c_int as core::ffi::c_uint {
         return dst;
     }
     return memcpy(dst, src, n);
 }
-unsafe extern "C" fn mul32x32_64(mut a: uint32_t, mut b: uint32_t) -> uint64_t {
+unsafe extern "C" fn mul32x32_64(a: uint32_t, b: uint32_t) -> uint64_t {
     return (a as uint64_t).wrapping_mul(b as u64);
 }
 #[inline]
 unsafe extern "C" fn poly1305_aligned_state(
-    mut state: *mut poly1305_state,
+    state: *mut poly1305_state,
 ) -> *mut poly1305_state_st {
     return ((state as uintptr_t).wrapping_add(63 as core::ffi::c_int as core::ffi::c_uint)
         & !(63 as core::ffi::c_int) as core::ffi::c_uint) as *mut poly1305_state_st;
 }
 unsafe extern "C" fn poly1305_update(
-    mut state: *mut poly1305_state_st,
+    state: *mut poly1305_state_st,
     mut in_0: *const uint8_t,
     mut len: size_t,
 ) {
     let mut current_block: u64;
-    let mut t0: uint32_t = 0;
-    let mut t1: uint32_t = 0;
-    let mut t2: uint32_t = 0;
-    let mut t3: uint32_t = 0;
+    let mut t0: uint32_t;
+    let mut t1: uint32_t;
+    let mut t2: uint32_t;
+    let mut t3: uint32_t;
     let mut t: [uint64_t; 5] = [0; 5];
-    let mut b: uint32_t = 0;
-    let mut c: uint64_t = 0;
-    let mut j: size_t = 0;
+    let mut b: uint32_t;
+    let mut c: uint64_t;
+    let mut j: size_t;
     let mut mp: [uint8_t; 16] = [0; 16];
     if len < 16 as core::ffi::c_int as core::ffi::c_uint {
         current_block = 13995579333348105930;
@@ -259,14 +259,14 @@ unsafe extern "C" fn poly1305_update(
 }
 #[no_mangle]
 pub unsafe extern "C" fn CRYPTO_poly1305_init(
-    mut statep: *mut poly1305_state,
-    mut key: *const uint8_t,
+    statep: *mut poly1305_state,
+    key: *const uint8_t,
 ) {
-    let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
-    let mut t0: uint32_t = 0;
-    let mut t1: uint32_t = 0;
-    let mut t2: uint32_t = 0;
-    let mut t3: uint32_t = 0;
+    let state: *mut poly1305_state_st = poly1305_aligned_state(statep);
+    let mut t0: uint32_t;
+    let mut t1: uint32_t;
+    let mut t2: uint32_t;
+    let mut t3: uint32_t;
     t0 = CRYPTO_load_u32_le(key.offset(0 as core::ffi::c_int as isize) as *const core::ffi::c_void);
     t1 = CRYPTO_load_u32_le(key.offset(4 as core::ffi::c_int as isize) as *const core::ffi::c_void);
     t2 = CRYPTO_load_u32_le(key.offset(8 as core::ffi::c_int as isize) as *const core::ffi::c_void);
@@ -302,11 +302,11 @@ pub unsafe extern "C" fn CRYPTO_poly1305_init(
 }
 #[no_mangle]
 pub unsafe extern "C" fn CRYPTO_poly1305_update(
-    mut statep: *mut poly1305_state,
+    statep: *mut poly1305_state,
     mut in_0: *const uint8_t,
     mut in_len: size_t,
 ) {
-    let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
+    let state: *mut poly1305_state_st = poly1305_aligned_state(statep);
     if in_len == 0 as core::ffi::c_int as core::ffi::c_uint {
         return;
     }
@@ -335,7 +335,7 @@ pub unsafe extern "C" fn CRYPTO_poly1305_update(
         }
     }
     if in_len >= 16 as core::ffi::c_int as core::ffi::c_uint {
-        let mut todo_0: size_t = in_len & !(0xf as core::ffi::c_int) as core::ffi::c_uint;
+        let todo_0: size_t = in_len & !(0xf as core::ffi::c_int) as core::ffi::c_uint;
         poly1305_update(state, in_0, todo_0);
         in_0 = in_0.offset(todo_0 as isize);
         in_len &= 0xf as core::ffi::c_int as core::ffi::c_uint;
@@ -351,17 +351,17 @@ pub unsafe extern "C" fn CRYPTO_poly1305_update(
 }
 #[no_mangle]
 pub unsafe extern "C" fn CRYPTO_poly1305_finish(
-    mut statep: *mut poly1305_state,
-    mut mac: *mut uint8_t,
+    statep: *mut poly1305_state,
+    mac: *mut uint8_t,
 ) {
-    let mut state: *mut poly1305_state_st = poly1305_aligned_state(statep);
-    let mut g0: uint32_t = 0;
-    let mut g1: uint32_t = 0;
-    let mut g2: uint32_t = 0;
-    let mut g3: uint32_t = 0;
-    let mut g4: uint32_t = 0;
-    let mut b: uint32_t = 0;
-    let mut nb: uint32_t = 0;
+    let state: *mut poly1305_state_st = poly1305_aligned_state(statep);
+    let mut g0: uint32_t;
+    let mut g1: uint32_t;
+    let mut g2: uint32_t;
+    let mut g3: uint32_t;
+    let g4: uint32_t;
+    let mut b: uint32_t;
+    let nb: uint32_t;
     if (*state).buf_used != 0 {
         poly1305_update(state, ((*state).buf).as_mut_ptr(), (*state).buf_used);
     }
@@ -409,7 +409,7 @@ pub unsafe extern "C" fn CRYPTO_poly1305_finish(
     (*state).h2 = (*state).h2 & nb | g2 & b;
     (*state).h3 = (*state).h3 & nb | g3 & b;
     (*state).h4 = (*state).h4 & nb | g4 & b;
-    let mut f0: uint64_t = (((*state).h0 | (*state).h1 << 26 as core::ffi::c_int) as u64)
+    let f0: uint64_t = (((*state).h0 | (*state).h1 << 26 as core::ffi::c_int) as u64)
         .wrapping_add(CRYPTO_load_u32_le(
             &mut *((*state).key)
                 .as_mut_ptr()

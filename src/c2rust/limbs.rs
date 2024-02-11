@@ -21,12 +21,12 @@ pub type Carry = Limb;
 pub type DoubleLimb = uint64_t;
 pub type BN_ULONG = crypto_word_t;
 #[inline]
-unsafe extern "C" fn value_barrier_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn value_barrier_w(a: crypto_word_t) -> crypto_word_t {
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
     return a;
 }
 #[inline]
-unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn constant_time_msb_w(a: crypto_word_t) -> crypto_word_t {
     return (0 as core::ffi::c_uint).wrapping_sub(
         a >> (core::mem::size_of::<crypto_word_t>() as u32)
             .wrapping_mul(8 as core::ffi::c_int as core::ffi::c_uint)
@@ -34,49 +34,49 @@ unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t 
     );
 }
 #[inline]
-unsafe extern "C" fn constant_time_is_zero_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn constant_time_is_zero_w(a: crypto_word_t) -> crypto_word_t {
     return constant_time_msb_w(!a & a.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint));
 }
 #[inline]
-unsafe extern "C" fn constant_time_is_nonzero_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn constant_time_is_nonzero_w(a: crypto_word_t) -> crypto_word_t {
     return !constant_time_is_zero_w(a);
 }
 #[inline]
 unsafe extern "C" fn constant_time_eq_w(
-    mut a: crypto_word_t,
-    mut b: crypto_word_t,
+    a: crypto_word_t,
+    b: crypto_word_t,
 ) -> crypto_word_t {
     return constant_time_is_zero_w(a ^ b);
 }
 #[inline]
 unsafe extern "C" fn constant_time_select_w(
     mut mask: crypto_word_t,
-    mut a: crypto_word_t,
-    mut b: crypto_word_t,
+    a: crypto_word_t,
+    b: crypto_word_t,
 ) -> crypto_word_t {
     mask = value_barrier_w(mask);
     return mask & a | !mask & b;
 }
 #[inline]
 unsafe extern "C" fn bn_umult_lohi(
-    mut low_out: *mut BN_ULONG,
-    mut high_out: *mut BN_ULONG,
-    mut a: BN_ULONG,
-    mut b: BN_ULONG,
+    low_out: *mut BN_ULONG,
+    high_out: *mut BN_ULONG,
+    a: BN_ULONG,
+    b: BN_ULONG,
 ) {
-    let mut result: uint64_t = (a as uint64_t).wrapping_mul(b as u64);
+    let result: uint64_t = (a as uint64_t).wrapping_mul(b as u64);
     *low_out = result as BN_ULONG;
     *high_out = (result >> 32 as core::ffi::c_int) as BN_ULONG;
 }
 #[inline]
 unsafe extern "C" fn limb_adc(
-    mut r: *mut Limb,
-    mut a: Limb,
-    mut b: Limb,
-    mut carry_in: Carry,
+    r: *mut Limb,
+    a: Limb,
+    b: Limb,
+    carry_in: Carry,
 ) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb)
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb)
         .wrapping_add(b as u64)
         .wrapping_add(carry_in as u64);
     *r = x as Limb;
@@ -84,22 +84,22 @@ unsafe extern "C" fn limb_adc(
     return ret;
 }
 #[inline]
-unsafe extern "C" fn limb_add(mut r: *mut Limb, mut a: Limb, mut b: Limb) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb).wrapping_add(b as u64);
+unsafe extern "C" fn limb_add(r: *mut Limb, a: Limb, b: Limb) -> Carry {
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb).wrapping_add(b as u64);
     *r = x as Limb;
     ret = (x >> 32 as core::ffi::c_uint) as Carry;
     return ret;
 }
 #[inline]
 unsafe extern "C" fn limb_sbb(
-    mut r: *mut Limb,
-    mut a: Limb,
-    mut b: Limb,
-    mut borrow_in: Carry,
+    r: *mut Limb,
+    a: Limb,
+    b: Limb,
+    borrow_in: Carry,
 ) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb)
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb)
         .wrapping_sub(b as u64)
         .wrapping_sub(borrow_in as u64);
     *r = x as Limb;
@@ -107,19 +107,19 @@ unsafe extern "C" fn limb_sbb(
     return ret;
 }
 #[inline]
-unsafe extern "C" fn limb_sub(mut r: *mut Limb, mut a: Limb, mut b: Limb) -> Carry {
-    let mut ret: Carry = 0;
-    let mut x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
+unsafe extern "C" fn limb_sub(r: *mut Limb, a: Limb, b: Limb) -> Carry {
+    let ret: Carry;
+    let x: DoubleLimb = (a as DoubleLimb).wrapping_sub(b as u64);
     *r = x as Limb;
     ret = (x >> 32 as core::ffi::c_uint & 1 as core::ffi::c_int as u64) as Carry;
     return ret;
 }
 #[inline]
 unsafe extern "C" fn limbs_add(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
+    num_limbs: size_t,
 ) -> Carry {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -152,10 +152,10 @@ unsafe extern "C" fn limbs_add(
 }
 #[inline]
 unsafe extern "C" fn limbs_sub(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
+    num_limbs: size_t,
 ) -> Carry {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -188,11 +188,11 @@ unsafe extern "C" fn limbs_sub(
 }
 #[inline]
 unsafe extern "C" fn limbs_select(
-    mut r: *mut Limb,
-    mut table: *const Limb,
-    mut num_limbs: size_t,
-    mut num_entries: size_t,
-    mut index: crypto_word_t,
+    r: *mut Limb,
+    table: *const Limb,
+    num_limbs: size_t,
+    num_entries: size_t,
+    index: crypto_word_t,
 ) {
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < num_limbs {
@@ -201,7 +201,7 @@ unsafe extern "C" fn limbs_select(
     }
     let mut e: size_t = 0 as core::ffi::c_int as size_t;
     while e < num_entries {
-        let mut equal: Limb = constant_time_eq_w(index, e);
+        let equal: Limb = constant_time_eq_w(index, e);
         let mut i_0: size_t = 0 as core::ffi::c_int as size_t;
         while i_0 < num_limbs {
             *r.offset(i_0 as isize) = constant_time_select_w(
@@ -215,7 +215,7 @@ unsafe extern "C" fn limbs_select(
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn LIMBS_are_zero(mut a: *const Limb, mut num_limbs: size_t) -> Limb {
+pub unsafe extern "C" fn LIMBS_are_zero(a: *const Limb, num_limbs: size_t) -> Limb {
     let mut is_zero: Limb = !(0 as core::ffi::c_int as crypto_word_t);
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < num_limbs {
@@ -230,9 +230,9 @@ pub unsafe extern "C" fn LIMBS_are_zero(mut a: *const Limb, mut num_limbs: size_
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_equal(
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut num_limbs: size_t,
+    a: *const Limb,
+    b: *const Limb,
+    num_limbs: size_t,
 ) -> Limb {
     let mut eq: Limb = !(0 as core::ffi::c_int as crypto_word_t);
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
@@ -248,9 +248,9 @@ pub unsafe extern "C" fn LIMBS_equal(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_equal_limb(
-    mut a: *const Limb,
-    mut b: Limb,
-    mut num_limbs: size_t,
+    a: *const Limb,
+    b: Limb,
+    num_limbs: size_t,
 ) -> Limb {
     if num_limbs == 0 as core::ffi::c_int as core::ffi::c_uint {
         return constant_time_is_zero_w(b);
@@ -267,16 +267,16 @@ pub unsafe extern "C" fn LIMBS_equal_limb(
             .as_ptr(),
         );
     }
-    let mut lo_equal: Limb = constant_time_eq_w(*a.offset(0 as core::ffi::c_int as isize), b);
-    let mut hi_zero: Limb = LIMBS_are_zero(
+    let lo_equal: Limb = constant_time_eq_w(*a.offset(0 as core::ffi::c_int as isize), b);
+    let hi_zero: Limb = LIMBS_are_zero(
         &*a.offset(1 as core::ffi::c_int as isize),
         num_limbs.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint),
     );
     return constant_time_select_w(lo_equal, hi_zero, 0 as core::ffi::c_int as crypto_word_t);
 }
 #[no_mangle]
-pub unsafe extern "C" fn LIMBS_are_even(mut a: *const Limb, mut num_limbs: size_t) -> Limb {
-    let mut lo: Limb = 0;
+pub unsafe extern "C" fn LIMBS_are_even(a: *const Limb, num_limbs: size_t) -> Limb {
+    let lo: Limb;
     if num_limbs == 0 as core::ffi::c_int as core::ffi::c_uint {
         lo = 0 as core::ffi::c_int as Limb;
     } else {
@@ -286,9 +286,9 @@ pub unsafe extern "C" fn LIMBS_are_even(mut a: *const Limb, mut num_limbs: size_
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_less_than(
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut num_limbs: size_t,
+    a: *const Limb,
+    b: *const Limb,
+    num_limbs: size_t,
 ) -> Limb {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -322,9 +322,9 @@ pub unsafe extern "C" fn LIMBS_less_than(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_less_than_limb(
-    mut a: *const Limb,
-    mut b: Limb,
-    mut num_limbs: size_t,
+    a: *const Limb,
+    b: Limb,
+    num_limbs: size_t,
 ) -> Limb {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -339,12 +339,12 @@ pub unsafe extern "C" fn LIMBS_less_than_limb(
         );
     }
     let mut dummy: Limb = 0;
-    let mut lo: Limb = constant_time_is_nonzero_w(limb_sub(
+    let lo: Limb = constant_time_is_nonzero_w(limb_sub(
         &mut dummy,
         *a.offset(0 as core::ffi::c_int as isize),
         b,
     ));
-    let mut hi: Limb = LIMBS_are_zero(
+    let hi: Limb = LIMBS_are_zero(
         &*a.offset(1 as core::ffi::c_int as isize),
         num_limbs.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint),
     );
@@ -352,9 +352,9 @@ pub unsafe extern "C" fn LIMBS_less_than_limb(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_reduce_once(
-    mut r: *mut Limb,
-    mut m: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    m: *const Limb,
+    num_limbs: size_t,
 ) {
     if num_limbs >= 1 as core::ffi::c_int as core::ffi::c_uint {
     } else {
@@ -368,7 +368,7 @@ pub unsafe extern "C" fn LIMBS_reduce_once(
             .as_ptr(),
         );
     }
-    let mut lt: Limb = LIMBS_less_than(r as *const Limb, m, num_limbs);
+    let lt: Limb = LIMBS_less_than(r as *const Limb, m, num_limbs);
     let mut borrow: Carry = limb_sub(
         &mut *r.offset(0 as core::ffi::c_int as isize),
         *r.offset(0 as core::ffi::c_int as isize),
@@ -395,15 +395,15 @@ pub unsafe extern "C" fn LIMBS_reduce_once(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_add_mod(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut m: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
+    m: *const Limb,
+    num_limbs: size_t,
 ) {
-    let mut overflow1: Limb = constant_time_is_nonzero_w(limbs_add(r, a, b, num_limbs));
-    let mut overflow2: Limb = !LIMBS_less_than(r as *const Limb, m, num_limbs);
-    let mut overflow: Limb = overflow1 | overflow2;
+    let overflow1: Limb = constant_time_is_nonzero_w(limbs_add(r, a, b, num_limbs));
+    let overflow2: Limb = !LIMBS_less_than(r as *const Limb, m, num_limbs);
+    let overflow: Limb = overflow1 | overflow2;
     let mut borrow: Carry = limb_sub(
         &mut *r.offset(0 as core::ffi::c_int as isize),
         *r.offset(0 as core::ffi::c_int as isize),
@@ -422,13 +422,13 @@ pub unsafe extern "C" fn LIMBS_add_mod(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_sub_mod(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: *const Limb,
-    mut m: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: *const Limb,
+    m: *const Limb,
+    num_limbs: size_t,
 ) {
-    let mut underflow: Limb = constant_time_is_nonzero_w(limbs_sub(r, a, b, num_limbs));
+    let underflow: Limb = constant_time_is_nonzero_w(limbs_sub(r, a, b, num_limbs));
     let mut carry: Carry = limb_add(
         &mut *r.offset(0 as core::ffi::c_int as isize),
         *r.offset(0 as core::ffi::c_int as isize),
@@ -447,12 +447,12 @@ pub unsafe extern "C" fn LIMBS_sub_mod(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_shl_mod(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut m: *const Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    m: *const Limb,
+    num_limbs: size_t,
 ) {
-    let mut overflow1: Limb = constant_time_is_nonzero_w(
+    let overflow1: Limb = constant_time_is_nonzero_w(
         *a.offset(num_limbs.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint) as isize)
             & (1 as core::ffi::c_int as Limb)
                 << (32 as core::ffi::c_uint)
@@ -461,15 +461,15 @@ pub unsafe extern "C" fn LIMBS_shl_mod(
     let mut carry: Limb = 0 as core::ffi::c_int as Limb;
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < num_limbs {
-        let mut limb: Limb = *a.offset(i as isize);
-        let mut new_carry: Limb = limb
+        let limb: Limb = *a.offset(i as isize);
+        let new_carry: Limb = limb
             >> (32 as core::ffi::c_uint).wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint);
         *r.offset(i as isize) = limb << 1 as core::ffi::c_int | carry;
         carry = new_carry;
         i = i.wrapping_add(1);
     }
-    let mut overflow2: Limb = !LIMBS_less_than(r as *const Limb, m, num_limbs);
-    let mut overflow: Limb = overflow1 | overflow2;
+    let overflow2: Limb = !LIMBS_less_than(r as *const Limb, m, num_limbs);
+    let overflow: Limb = overflow1 | overflow2;
     let mut borrow: Carry = limb_sub(
         &mut *r.offset(0 as core::ffi::c_int as isize),
         *r.offset(0 as core::ffi::c_int as isize),
@@ -488,10 +488,10 @@ pub unsafe extern "C" fn LIMBS_shl_mod(
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_select_512_32(
-    mut r: *mut Limb,
-    mut table: *const Limb,
-    mut num_limbs: size_t,
-    mut index: crypto_word_t,
+    r: *mut Limb,
+    table: *const Limb,
+    num_limbs: size_t,
+    index: crypto_word_t,
 ) -> core::ffi::c_int {
     if num_limbs.wrapping_rem(
         (512 as core::ffi::c_int as core::ffi::c_uint).wrapping_div(32 as core::ffi::c_uint),
@@ -505,32 +505,32 @@ pub unsafe extern "C" fn LIMBS_select_512_32(
 static mut FIVE_BITS_MASK: Limb = 0x1f as core::ffi::c_int as Limb;
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_window5_split_window(
-    mut lower_limb: Limb,
-    mut higher_limb: Limb,
-    mut index_within_word: size_t,
+    lower_limb: Limb,
+    higher_limb: Limb,
+    index_within_word: size_t,
 ) -> crypto_word_t {
-    let mut high_bits: Limb =
+    let high_bits: Limb =
         higher_limb << (32 as core::ffi::c_uint).wrapping_sub(index_within_word) & FIVE_BITS_MASK;
-    let mut low_bits: Limb = lower_limb >> index_within_word;
+    let low_bits: Limb = lower_limb >> index_within_word;
     return low_bits | high_bits;
 }
 #[no_mangle]
 pub unsafe extern "C" fn LIMBS_window5_unsplit_window(
-    mut limb: Limb,
-    mut index_within_word: size_t,
+    limb: Limb,
+    index_within_word: size_t,
 ) -> crypto_word_t {
     return limb >> index_within_word & FIVE_BITS_MASK;
 }
 #[no_mangle]
-pub unsafe extern "C" fn LIMB_shr(mut a: Limb, mut shift: size_t) -> Limb {
+pub unsafe extern "C" fn LIMB_shr(a: Limb, shift: size_t) -> Limb {
     return a >> shift;
 }
 #[no_mangle]
 pub unsafe extern "C" fn limbs_mul_add_limb(
-    mut r: *mut Limb,
-    mut a: *const Limb,
-    mut b: Limb,
-    mut num_limbs: size_t,
+    r: *mut Limb,
+    a: *const Limb,
+    b: Limb,
+    num_limbs: size_t,
 ) -> Limb {
     let mut carried: Limb = 0 as core::ffi::c_int as Limb;
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
@@ -540,9 +540,9 @@ pub unsafe extern "C" fn limbs_mul_add_limb(
         bn_umult_lohi(&mut lo, &mut hi, *a.offset(i as isize), b);
         let mut tmp: Limb = 0;
         let mut c: Carry = limb_add(&mut tmp, lo, carried);
-        c = limb_adc(&mut carried, hi, 0 as core::ffi::c_int as Limb, c);
+        let _c = limb_adc(&mut carried, hi, 0 as core::ffi::c_int as Limb, c);
         c = limb_add(&mut *r.offset(i as isize), *r.offset(i as isize), tmp);
-        c = limb_adc(&mut carried, carried, 0 as core::ffi::c_int as Limb, c);
+        let _c = limb_adc(&mut carried, carried, 0 as core::ffi::c_int as Limb, c);
         i = i.wrapping_add(1);
     }
     return carried;

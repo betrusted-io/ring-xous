@@ -84,17 +84,17 @@ pub type fiat_25519_uint1 = core::ffi::c_uchar;
 pub type fiat_25519_int1 = core::ffi::c_schar;
 #[inline]
 unsafe extern "C" fn constant_time_eq_w(
-    mut a: crypto_word_t,
-    mut b: crypto_word_t,
+    a: crypto_word_t,
+    b: crypto_word_t,
 ) -> crypto_word_t {
     return constant_time_is_zero_w(a ^ b);
 }
 #[inline]
-unsafe extern "C" fn constant_time_is_zero_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn constant_time_is_zero_w(a: crypto_word_t) -> crypto_word_t {
     return constant_time_msb_w(!a & a.wrapping_sub(1 as core::ffi::c_int as core::ffi::c_uint));
 }
 #[inline]
-unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t {
+unsafe extern "C" fn constant_time_msb_w(a: crypto_word_t) -> crypto_word_t {
     return (0 as core::ffi::c_uint).wrapping_sub(
         a >> (core::mem::size_of::<crypto_word_t>() as u32)
             .wrapping_mul(8 as core::ffi::c_int as core::ffi::c_uint)
@@ -103,9 +103,9 @@ unsafe extern "C" fn constant_time_msb_w(mut a: crypto_word_t) -> crypto_word_t 
 }
 #[inline]
 unsafe extern "C" fn OPENSSL_memcpy(
-    mut dst: *mut core::ffi::c_void,
-    mut src: *const core::ffi::c_void,
-    mut n: size_t,
+    dst: *mut core::ffi::c_void,
+    src: *const core::ffi::c_void,
+    n: size_t,
 ) -> *mut core::ffi::c_void {
     if n == 0 as core::ffi::c_int as core::ffi::c_uint {
         return dst;
@@ -114,9 +114,9 @@ unsafe extern "C" fn OPENSSL_memcpy(
 }
 #[inline]
 unsafe extern "C" fn OPENSSL_memset(
-    mut dst: *mut core::ffi::c_void,
-    mut c: core::ffi::c_int,
-    mut n: size_t,
+    dst: *mut core::ffi::c_void,
+    c: core::ffi::c_int,
+    n: size_t,
 ) -> *mut core::ffi::c_void {
     if n == 0 as core::ffi::c_int as core::ffi::c_uint {
         return dst;
@@ -124,7 +124,7 @@ unsafe extern "C" fn OPENSSL_memset(
     return memset(dst, c, n);
 }
 #[inline]
-unsafe extern "C" fn fe_limbs_copy(mut r: *mut fe_limb_t, mut a: *const fe_limb_t) {
+unsafe extern "C" fn fe_limbs_copy(r: *mut fe_limb_t, a: *const fe_limb_t) {
     let mut i: size_t = 0 as core::ffi::c_int as size_t;
     while i < 10 as core::ffi::c_int as core::ffi::c_uint {
         *r.offset(i as isize) = *a.offset(i as isize);
@@ -132,7 +132,7 @@ unsafe extern "C" fn fe_limbs_copy(mut r: *mut fe_limb_t, mut a: *const fe_limb_
     }
 }
 static mut d: fe = {
-    let mut init = fe {
+    let init = fe {
         v: [
             56195235 as core::ffi::c_int as fe_limb_t,
             13857412 as core::ffi::c_int as fe_limb_t,
@@ -149,7 +149,7 @@ static mut d: fe = {
     init
 };
 static mut sqrtm1: fe = {
-    let mut init = fe {
+    let init = fe {
         v: [
             34513072 as core::ffi::c_int as fe_limb_t,
             25610706 as core::ffi::c_int as fe_limb_t,
@@ -166,7 +166,7 @@ static mut sqrtm1: fe = {
     init
 };
 static mut d2: fe = {
-    let mut init = fe {
+    let init = fe {
         v: [
             45281625 as core::ffi::c_int as fe_limb_t,
             27714825 as core::ffi::c_int as fe_limb_t,
@@ -1146,9 +1146,9 @@ static mut k25519SmallPrecomp: [uint8_t; 960] = [
 ];
 static mut Bi: [ge_precomp; 8] = [
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         25967493 as core::ffi::c_int as fe_limb_t,
                         19198397 as core::ffi::c_int as fe_limb_t,
@@ -1165,7 +1165,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         54563134 as core::ffi::c_int as fe_limb_t,
                         934261 as core::ffi::c_int as fe_limb_t,
@@ -1182,7 +1182,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         58370664 as core::ffi::c_int as fe_limb_t,
                         4489569 as core::ffi::c_int as fe_limb_t,
@@ -1202,9 +1202,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         15636272 as core::ffi::c_int as fe_limb_t,
                         23865875 as core::ffi::c_int as fe_limb_t,
@@ -1221,7 +1221,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         16568933 as core::ffi::c_int as fe_limb_t,
                         4717097 as core::ffi::c_int as fe_limb_t,
@@ -1238,7 +1238,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         30464137 as core::ffi::c_int as fe_limb_t,
                         27578307 as core::ffi::c_int as fe_limb_t,
@@ -1258,9 +1258,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         10861363 as core::ffi::c_int as fe_limb_t,
                         11473154 as core::ffi::c_int as fe_limb_t,
@@ -1277,7 +1277,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         4708026 as core::ffi::c_int as fe_limb_t,
                         6336745 as core::ffi::c_int as fe_limb_t,
@@ -1294,7 +1294,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         19563141 as core::ffi::c_int as fe_limb_t,
                         16186464 as core::ffi::c_int as fe_limb_t,
@@ -1314,9 +1314,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         5153727 as core::ffi::c_int as fe_limb_t,
                         9909285 as core::ffi::c_int as fe_limb_t,
@@ -1333,7 +1333,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         36839857 as core::ffi::c_int as fe_limb_t,
                         30090922 as core::ffi::c_int as fe_limb_t,
@@ -1350,7 +1350,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         28881826 as core::ffi::c_int as fe_limb_t,
                         14381568 as core::ffi::c_int as fe_limb_t,
@@ -1370,9 +1370,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         44589871 as core::ffi::c_int as fe_limb_t,
                         26862249 as core::ffi::c_int as fe_limb_t,
@@ -1389,7 +1389,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         60653668 as core::ffi::c_int as fe_limb_t,
                         25714560 as core::ffi::c_int as fe_limb_t,
@@ -1406,7 +1406,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         4566811 as core::ffi::c_int as fe_limb_t,
                         20590564 as core::ffi::c_int as fe_limb_t,
@@ -1426,9 +1426,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         41954014 as core::ffi::c_int as fe_limb_t,
                         29368610 as core::ffi::c_int as fe_limb_t,
@@ -1445,7 +1445,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         25576264 as core::ffi::c_int as fe_limb_t,
                         30851218 as core::ffi::c_int as fe_limb_t,
@@ -1462,7 +1462,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         23103977 as core::ffi::c_int as fe_limb_t,
                         13316479 as core::ffi::c_int as fe_limb_t,
@@ -1482,9 +1482,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         33587053 as core::ffi::c_int as fe_limb_t,
                         3180712 as core::ffi::c_int as fe_limb_t,
@@ -1501,7 +1501,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         41926547 as core::ffi::c_int as fe_limb_t,
                         29380300 as core::ffi::c_int as fe_limb_t,
@@ -1518,7 +1518,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         53388152 as core::ffi::c_int as fe_limb_t,
                         2639452 as core::ffi::c_int as fe_limb_t,
@@ -1538,9 +1538,9 @@ static mut Bi: [ge_precomp; 8] = [
         init
     },
     {
-        let mut init = ge_precomp {
+        let init = ge_precomp {
             yplusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         63957664 as core::ffi::c_int as fe_limb_t,
                         28508356 as core::ffi::c_int as fe_limb_t,
@@ -1557,7 +1557,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             yminusx: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         42782475 as core::ffi::c_int as fe_limb_t,
                         15950225 as core::ffi::c_int as fe_limb_t,
@@ -1574,7 +1574,7 @@ static mut Bi: [ge_precomp; 8] = [
                 init
             },
             xy2d: {
-                let mut init = fe_loose {
+                let init = fe_loose {
                     v: [
                         64009494 as core::ffi::c_int as fe_limb_t,
                         10324966 as core::ffi::c_int as fe_limb_t,
@@ -1595,21 +1595,21 @@ static mut Bi: [ge_precomp; 8] = [
     },
 ];
 #[inline]
-unsafe extern "C" fn fiat_25519_value_barrier_u32(mut a: uint32_t) -> uint32_t {
+unsafe extern "C" fn fiat_25519_value_barrier_u32(a: uint32_t) -> uint32_t {
     core::sync::atomic::compiler_fence(core::sync::atomic::Ordering::SeqCst);
     return a;
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_addcarryx_u26(
-    mut out1: *mut uint32_t,
-    mut out2: *mut fiat_25519_uint1,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: uint32_t,
-    mut arg3: uint32_t,
+    out1: *mut uint32_t,
+    out2: *mut fiat_25519_uint1,
+    arg1: fiat_25519_uint1,
+    arg2: uint32_t,
+    arg3: uint32_t,
 ) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: fiat_25519_uint1 = 0;
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: fiat_25519_uint1;
     x1 = (arg1 as core::ffi::c_uint)
         .wrapping_add(arg2)
         .wrapping_add(arg3);
@@ -1620,15 +1620,15 @@ unsafe extern "C" fn fiat_25519_addcarryx_u26(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_subborrowx_u26(
-    mut out1: *mut uint32_t,
-    mut out2: *mut fiat_25519_uint1,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: uint32_t,
-    mut arg3: uint32_t,
+    out1: *mut uint32_t,
+    out2: *mut fiat_25519_uint1,
+    arg1: fiat_25519_uint1,
+    arg2: uint32_t,
+    arg3: uint32_t,
 ) {
-    let mut x1: int32_t = 0;
-    let mut x2: fiat_25519_int1 = 0;
-    let mut x3: uint32_t = 0;
+    let x1: int32_t;
+    let x2: fiat_25519_int1;
+    let x3: uint32_t;
     x1 = arg2.wrapping_sub(arg1 as core::ffi::c_uint) as int32_t - arg3 as int32_t;
     x2 = (x1 >> 26 as core::ffi::c_int) as fiat_25519_int1;
     x3 = x1 as core::ffi::c_uint & 0x3ffffff as core::ffi::c_uint;
@@ -1637,15 +1637,15 @@ unsafe extern "C" fn fiat_25519_subborrowx_u26(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_addcarryx_u25(
-    mut out1: *mut uint32_t,
-    mut out2: *mut fiat_25519_uint1,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: uint32_t,
-    mut arg3: uint32_t,
+    out1: *mut uint32_t,
+    out2: *mut fiat_25519_uint1,
+    arg1: fiat_25519_uint1,
+    arg2: uint32_t,
+    arg3: uint32_t,
 ) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: fiat_25519_uint1 = 0;
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: fiat_25519_uint1;
     x1 = (arg1 as core::ffi::c_uint)
         .wrapping_add(arg2)
         .wrapping_add(arg3);
@@ -1656,15 +1656,15 @@ unsafe extern "C" fn fiat_25519_addcarryx_u25(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_subborrowx_u25(
-    mut out1: *mut uint32_t,
-    mut out2: *mut fiat_25519_uint1,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: uint32_t,
-    mut arg3: uint32_t,
+    out1: *mut uint32_t,
+    out2: *mut fiat_25519_uint1,
+    arg1: fiat_25519_uint1,
+    arg2: uint32_t,
+    arg3: uint32_t,
 ) {
-    let mut x1: int32_t = 0;
-    let mut x2: fiat_25519_int1 = 0;
-    let mut x3: uint32_t = 0;
+    let x1: int32_t;
+    let x2: fiat_25519_int1;
+    let x3: uint32_t;
     x1 = arg2.wrapping_sub(arg1 as core::ffi::c_uint) as int32_t - arg3 as int32_t;
     x2 = (x1 >> 25 as core::ffi::c_int) as fiat_25519_int1;
     x3 = x1 as core::ffi::c_uint & 0x1ffffff as core::ffi::c_uint;
@@ -1673,14 +1673,14 @@ unsafe extern "C" fn fiat_25519_subborrowx_u25(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_cmovznz_u32(
-    mut out1: *mut uint32_t,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: uint32_t,
-    mut arg3: uint32_t,
+    out1: *mut uint32_t,
+    arg1: fiat_25519_uint1,
+    arg2: uint32_t,
+    arg3: uint32_t,
 ) {
-    let mut x1: fiat_25519_uint1 = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
+    let x1: fiat_25519_uint1;
+    let x2: uint32_t;
+    let x3: uint32_t;
     x1 = (arg1 != 0) as core::ffi::c_int as fiat_25519_uint1;
     x2 = (0 as core::ffi::c_int - x1 as core::ffi::c_int) as fiat_25519_int1 as core::ffi::c_uint
         & 0xffffffff as core::ffi::c_uint;
@@ -1689,157 +1689,157 @@ unsafe extern "C" fn fiat_25519_cmovznz_u32(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_carry_mul(
-    mut out1: *mut uint32_t,
-    mut arg1: *const uint32_t,
-    mut arg2: *const uint32_t,
+    out1: *mut uint32_t,
+    arg1: *const uint32_t,
+    arg2: *const uint32_t,
 ) {
-    let mut x1: uint64_t = 0;
-    let mut x2: uint64_t = 0;
-    let mut x3: uint64_t = 0;
-    let mut x4: uint64_t = 0;
-    let mut x5: uint64_t = 0;
-    let mut x6: uint64_t = 0;
-    let mut x7: uint64_t = 0;
-    let mut x8: uint64_t = 0;
-    let mut x9: uint64_t = 0;
-    let mut x10: uint64_t = 0;
-    let mut x11: uint64_t = 0;
-    let mut x12: uint64_t = 0;
-    let mut x13: uint64_t = 0;
-    let mut x14: uint64_t = 0;
-    let mut x15: uint64_t = 0;
-    let mut x16: uint64_t = 0;
-    let mut x17: uint64_t = 0;
-    let mut x18: uint64_t = 0;
-    let mut x19: uint64_t = 0;
-    let mut x20: uint64_t = 0;
-    let mut x21: uint64_t = 0;
-    let mut x22: uint64_t = 0;
-    let mut x23: uint64_t = 0;
-    let mut x24: uint64_t = 0;
-    let mut x25: uint64_t = 0;
-    let mut x26: uint64_t = 0;
-    let mut x27: uint64_t = 0;
-    let mut x28: uint64_t = 0;
-    let mut x29: uint64_t = 0;
-    let mut x30: uint64_t = 0;
-    let mut x31: uint64_t = 0;
-    let mut x32: uint64_t = 0;
-    let mut x33: uint64_t = 0;
-    let mut x34: uint64_t = 0;
-    let mut x35: uint64_t = 0;
-    let mut x36: uint64_t = 0;
-    let mut x37: uint64_t = 0;
-    let mut x38: uint64_t = 0;
-    let mut x39: uint64_t = 0;
-    let mut x40: uint64_t = 0;
-    let mut x41: uint64_t = 0;
-    let mut x42: uint64_t = 0;
-    let mut x43: uint64_t = 0;
-    let mut x44: uint64_t = 0;
-    let mut x45: uint64_t = 0;
-    let mut x46: uint64_t = 0;
-    let mut x47: uint64_t = 0;
-    let mut x48: uint64_t = 0;
-    let mut x49: uint64_t = 0;
-    let mut x50: uint64_t = 0;
-    let mut x51: uint64_t = 0;
-    let mut x52: uint64_t = 0;
-    let mut x53: uint64_t = 0;
-    let mut x54: uint64_t = 0;
-    let mut x55: uint64_t = 0;
-    let mut x56: uint64_t = 0;
-    let mut x57: uint64_t = 0;
-    let mut x58: uint64_t = 0;
-    let mut x59: uint64_t = 0;
-    let mut x60: uint64_t = 0;
-    let mut x61: uint64_t = 0;
-    let mut x62: uint64_t = 0;
-    let mut x63: uint64_t = 0;
-    let mut x64: uint64_t = 0;
-    let mut x65: uint64_t = 0;
-    let mut x66: uint64_t = 0;
-    let mut x67: uint64_t = 0;
-    let mut x68: uint64_t = 0;
-    let mut x69: uint64_t = 0;
-    let mut x70: uint64_t = 0;
-    let mut x71: uint64_t = 0;
-    let mut x72: uint64_t = 0;
-    let mut x73: uint64_t = 0;
-    let mut x74: uint64_t = 0;
-    let mut x75: uint64_t = 0;
-    let mut x76: uint64_t = 0;
-    let mut x77: uint64_t = 0;
-    let mut x78: uint64_t = 0;
-    let mut x79: uint64_t = 0;
-    let mut x80: uint64_t = 0;
-    let mut x81: uint64_t = 0;
-    let mut x82: uint64_t = 0;
-    let mut x83: uint64_t = 0;
-    let mut x84: uint64_t = 0;
-    let mut x85: uint64_t = 0;
-    let mut x86: uint64_t = 0;
-    let mut x87: uint64_t = 0;
-    let mut x88: uint64_t = 0;
-    let mut x89: uint64_t = 0;
-    let mut x90: uint64_t = 0;
-    let mut x91: uint64_t = 0;
-    let mut x92: uint64_t = 0;
-    let mut x93: uint64_t = 0;
-    let mut x94: uint64_t = 0;
-    let mut x95: uint64_t = 0;
-    let mut x96: uint64_t = 0;
-    let mut x97: uint64_t = 0;
-    let mut x98: uint64_t = 0;
-    let mut x99: uint64_t = 0;
-    let mut x100: uint64_t = 0;
-    let mut x101: uint64_t = 0;
-    let mut x102: uint64_t = 0;
-    let mut x103: uint32_t = 0;
-    let mut x104: uint64_t = 0;
-    let mut x105: uint64_t = 0;
-    let mut x106: uint64_t = 0;
-    let mut x107: uint64_t = 0;
-    let mut x108: uint64_t = 0;
-    let mut x109: uint64_t = 0;
-    let mut x110: uint64_t = 0;
-    let mut x111: uint64_t = 0;
-    let mut x112: uint64_t = 0;
-    let mut x113: uint64_t = 0;
-    let mut x114: uint64_t = 0;
-    let mut x115: uint32_t = 0;
-    let mut x116: uint64_t = 0;
-    let mut x117: uint64_t = 0;
-    let mut x118: uint32_t = 0;
-    let mut x119: uint64_t = 0;
-    let mut x120: uint64_t = 0;
-    let mut x121: uint32_t = 0;
-    let mut x122: uint64_t = 0;
-    let mut x123: uint64_t = 0;
-    let mut x124: uint32_t = 0;
-    let mut x125: uint64_t = 0;
-    let mut x126: uint64_t = 0;
-    let mut x127: uint32_t = 0;
-    let mut x128: uint64_t = 0;
-    let mut x129: uint64_t = 0;
-    let mut x130: uint32_t = 0;
-    let mut x131: uint64_t = 0;
-    let mut x132: uint64_t = 0;
-    let mut x133: uint32_t = 0;
-    let mut x134: uint64_t = 0;
-    let mut x135: uint64_t = 0;
-    let mut x136: uint32_t = 0;
-    let mut x137: uint64_t = 0;
-    let mut x138: uint64_t = 0;
-    let mut x139: uint32_t = 0;
-    let mut x140: uint64_t = 0;
-    let mut x141: uint64_t = 0;
-    let mut x142: uint32_t = 0;
-    let mut x143: uint32_t = 0;
-    let mut x144: uint32_t = 0;
-    let mut x145: fiat_25519_uint1 = 0;
-    let mut x146: uint32_t = 0;
-    let mut x147: uint32_t = 0;
+    let x1: uint64_t;
+    let x2: uint64_t;
+    let x3: uint64_t;
+    let x4: uint64_t;
+    let x5: uint64_t;
+    let x6: uint64_t;
+    let x7: uint64_t;
+    let x8: uint64_t;
+    let x9: uint64_t;
+    let x10: uint64_t;
+    let x11: uint64_t;
+    let x12: uint64_t;
+    let x13: uint64_t;
+    let x14: uint64_t;
+    let x15: uint64_t;
+    let x16: uint64_t;
+    let x17: uint64_t;
+    let x18: uint64_t;
+    let x19: uint64_t;
+    let x20: uint64_t;
+    let x21: uint64_t;
+    let x22: uint64_t;
+    let x23: uint64_t;
+    let x24: uint64_t;
+    let x25: uint64_t;
+    let x26: uint64_t;
+    let x27: uint64_t;
+    let x28: uint64_t;
+    let x29: uint64_t;
+    let x30: uint64_t;
+    let x31: uint64_t;
+    let x32: uint64_t;
+    let x33: uint64_t;
+    let x34: uint64_t;
+    let x35: uint64_t;
+    let x36: uint64_t;
+    let x37: uint64_t;
+    let x38: uint64_t;
+    let x39: uint64_t;
+    let x40: uint64_t;
+    let x41: uint64_t;
+    let x42: uint64_t;
+    let x43: uint64_t;
+    let x44: uint64_t;
+    let x45: uint64_t;
+    let x46: uint64_t;
+    let x47: uint64_t;
+    let x48: uint64_t;
+    let x49: uint64_t;
+    let x50: uint64_t;
+    let x51: uint64_t;
+    let x52: uint64_t;
+    let x53: uint64_t;
+    let x54: uint64_t;
+    let x55: uint64_t;
+    let x56: uint64_t;
+    let x57: uint64_t;
+    let x58: uint64_t;
+    let x59: uint64_t;
+    let x60: uint64_t;
+    let x61: uint64_t;
+    let x62: uint64_t;
+    let x63: uint64_t;
+    let x64: uint64_t;
+    let x65: uint64_t;
+    let x66: uint64_t;
+    let x67: uint64_t;
+    let x68: uint64_t;
+    let x69: uint64_t;
+    let x70: uint64_t;
+    let x71: uint64_t;
+    let x72: uint64_t;
+    let x73: uint64_t;
+    let x74: uint64_t;
+    let x75: uint64_t;
+    let x76: uint64_t;
+    let x77: uint64_t;
+    let x78: uint64_t;
+    let x79: uint64_t;
+    let x80: uint64_t;
+    let x81: uint64_t;
+    let x82: uint64_t;
+    let x83: uint64_t;
+    let x84: uint64_t;
+    let x85: uint64_t;
+    let x86: uint64_t;
+    let x87: uint64_t;
+    let x88: uint64_t;
+    let x89: uint64_t;
+    let x90: uint64_t;
+    let x91: uint64_t;
+    let x92: uint64_t;
+    let x93: uint64_t;
+    let x94: uint64_t;
+    let x95: uint64_t;
+    let x96: uint64_t;
+    let x97: uint64_t;
+    let x98: uint64_t;
+    let x99: uint64_t;
+    let x100: uint64_t;
+    let x101: uint64_t;
+    let x102: uint64_t;
+    let x103: uint32_t;
+    let x104: uint64_t;
+    let x105: uint64_t;
+    let x106: uint64_t;
+    let x107: uint64_t;
+    let x108: uint64_t;
+    let x109: uint64_t;
+    let x110: uint64_t;
+    let x111: uint64_t;
+    let x112: uint64_t;
+    let x113: uint64_t;
+    let x114: uint64_t;
+    let x115: uint32_t;
+    let x116: uint64_t;
+    let x117: uint64_t;
+    let x118: uint32_t;
+    let x119: uint64_t;
+    let x120: uint64_t;
+    let x121: uint32_t;
+    let x122: uint64_t;
+    let x123: uint64_t;
+    let x124: uint32_t;
+    let x125: uint64_t;
+    let x126: uint64_t;
+    let x127: uint32_t;
+    let x128: uint64_t;
+    let x129: uint64_t;
+    let x130: uint32_t;
+    let x131: uint64_t;
+    let x132: uint64_t;
+    let x133: uint32_t;
+    let x134: uint64_t;
+    let x135: uint64_t;
+    let x136: uint32_t;
+    let x137: uint64_t;
+    let x138: uint64_t;
+    let x139: uint32_t;
+    let x140: uint64_t;
+    let x141: uint64_t;
+    let x142: uint32_t;
+    let x143: uint32_t;
+    let x144: uint32_t;
+    let x145: fiat_25519_uint1;
+    let x146: uint32_t;
+    let x147: uint32_t;
     x1 = (*arg1.offset(9 as core::ffi::c_int as isize) as uint64_t).wrapping_mul(
         (*arg2.offset(9 as core::ffi::c_int as isize))
             .wrapping_mul(0x26 as core::ffi::c_int as core::ffi::c_uint) as u64,
@@ -2249,127 +2249,127 @@ unsafe extern "C" fn fiat_25519_carry_mul(
     *out1.offset(9 as core::ffi::c_int as isize) = x139;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_carry_square(mut out1: *mut uint32_t, mut arg1: *const uint32_t) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint64_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
-    let mut x11: uint64_t = 0;
-    let mut x12: uint32_t = 0;
-    let mut x13: uint32_t = 0;
-    let mut x14: uint32_t = 0;
-    let mut x15: uint32_t = 0;
-    let mut x16: uint32_t = 0;
-    let mut x17: uint32_t = 0;
-    let mut x18: uint32_t = 0;
-    let mut x19: uint64_t = 0;
-    let mut x20: uint64_t = 0;
-    let mut x21: uint64_t = 0;
-    let mut x22: uint64_t = 0;
-    let mut x23: uint64_t = 0;
-    let mut x24: uint64_t = 0;
-    let mut x25: uint64_t = 0;
-    let mut x26: uint64_t = 0;
-    let mut x27: uint64_t = 0;
-    let mut x28: uint64_t = 0;
-    let mut x29: uint64_t = 0;
-    let mut x30: uint64_t = 0;
-    let mut x31: uint64_t = 0;
-    let mut x32: uint64_t = 0;
-    let mut x33: uint64_t = 0;
-    let mut x34: uint64_t = 0;
-    let mut x35: uint64_t = 0;
-    let mut x36: uint64_t = 0;
-    let mut x37: uint64_t = 0;
-    let mut x38: uint64_t = 0;
-    let mut x39: uint64_t = 0;
-    let mut x40: uint64_t = 0;
-    let mut x41: uint64_t = 0;
-    let mut x42: uint64_t = 0;
-    let mut x43: uint64_t = 0;
-    let mut x44: uint64_t = 0;
-    let mut x45: uint64_t = 0;
-    let mut x46: uint64_t = 0;
-    let mut x47: uint64_t = 0;
-    let mut x48: uint64_t = 0;
-    let mut x49: uint64_t = 0;
-    let mut x50: uint64_t = 0;
-    let mut x51: uint64_t = 0;
-    let mut x52: uint64_t = 0;
-    let mut x53: uint64_t = 0;
-    let mut x54: uint64_t = 0;
-    let mut x55: uint64_t = 0;
-    let mut x56: uint64_t = 0;
-    let mut x57: uint64_t = 0;
-    let mut x58: uint64_t = 0;
-    let mut x59: uint64_t = 0;
-    let mut x60: uint64_t = 0;
-    let mut x61: uint64_t = 0;
-    let mut x62: uint64_t = 0;
-    let mut x63: uint64_t = 0;
-    let mut x64: uint64_t = 0;
-    let mut x65: uint64_t = 0;
-    let mut x66: uint64_t = 0;
-    let mut x67: uint64_t = 0;
-    let mut x68: uint64_t = 0;
-    let mut x69: uint64_t = 0;
-    let mut x70: uint64_t = 0;
-    let mut x71: uint64_t = 0;
-    let mut x72: uint64_t = 0;
-    let mut x73: uint64_t = 0;
-    let mut x74: uint64_t = 0;
-    let mut x75: uint64_t = 0;
-    let mut x76: uint32_t = 0;
-    let mut x77: uint64_t = 0;
-    let mut x78: uint64_t = 0;
-    let mut x79: uint64_t = 0;
-    let mut x80: uint64_t = 0;
-    let mut x81: uint64_t = 0;
-    let mut x82: uint64_t = 0;
-    let mut x83: uint64_t = 0;
-    let mut x84: uint64_t = 0;
-    let mut x85: uint64_t = 0;
-    let mut x86: uint64_t = 0;
-    let mut x87: uint64_t = 0;
-    let mut x88: uint32_t = 0;
-    let mut x89: uint64_t = 0;
-    let mut x90: uint64_t = 0;
-    let mut x91: uint32_t = 0;
-    let mut x92: uint64_t = 0;
-    let mut x93: uint64_t = 0;
-    let mut x94: uint32_t = 0;
-    let mut x95: uint64_t = 0;
-    let mut x96: uint64_t = 0;
-    let mut x97: uint32_t = 0;
-    let mut x98: uint64_t = 0;
-    let mut x99: uint64_t = 0;
-    let mut x100: uint32_t = 0;
-    let mut x101: uint64_t = 0;
-    let mut x102: uint64_t = 0;
-    let mut x103: uint32_t = 0;
-    let mut x104: uint64_t = 0;
-    let mut x105: uint64_t = 0;
-    let mut x106: uint32_t = 0;
-    let mut x107: uint64_t = 0;
-    let mut x108: uint64_t = 0;
-    let mut x109: uint32_t = 0;
-    let mut x110: uint64_t = 0;
-    let mut x111: uint64_t = 0;
-    let mut x112: uint32_t = 0;
-    let mut x113: uint64_t = 0;
-    let mut x114: uint64_t = 0;
-    let mut x115: uint32_t = 0;
-    let mut x116: uint32_t = 0;
-    let mut x117: uint32_t = 0;
-    let mut x118: fiat_25519_uint1 = 0;
-    let mut x119: uint32_t = 0;
-    let mut x120: uint32_t = 0;
+unsafe extern "C" fn fiat_25519_carry_square(out1: *mut uint32_t, arg1: *const uint32_t) {
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint64_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
+    let x11: uint64_t;
+    let x12: uint32_t;
+    let x13: uint32_t;
+    let x14: uint32_t;
+    let x15: uint32_t;
+    let x16: uint32_t;
+    let x17: uint32_t;
+    let x18: uint32_t;
+    let x19: uint64_t;
+    let x20: uint64_t;
+    let x21: uint64_t;
+    let x22: uint64_t;
+    let x23: uint64_t;
+    let x24: uint64_t;
+    let x25: uint64_t;
+    let x26: uint64_t;
+    let x27: uint64_t;
+    let x28: uint64_t;
+    let x29: uint64_t;
+    let x30: uint64_t;
+    let x31: uint64_t;
+    let x32: uint64_t;
+    let x33: uint64_t;
+    let x34: uint64_t;
+    let x35: uint64_t;
+    let x36: uint64_t;
+    let x37: uint64_t;
+    let x38: uint64_t;
+    let x39: uint64_t;
+    let x40: uint64_t;
+    let x41: uint64_t;
+    let x42: uint64_t;
+    let x43: uint64_t;
+    let x44: uint64_t;
+    let x45: uint64_t;
+    let x46: uint64_t;
+    let x47: uint64_t;
+    let x48: uint64_t;
+    let x49: uint64_t;
+    let x50: uint64_t;
+    let x51: uint64_t;
+    let x52: uint64_t;
+    let x53: uint64_t;
+    let x54: uint64_t;
+    let x55: uint64_t;
+    let x56: uint64_t;
+    let x57: uint64_t;
+    let x58: uint64_t;
+    let x59: uint64_t;
+    let x60: uint64_t;
+    let x61: uint64_t;
+    let x62: uint64_t;
+    let x63: uint64_t;
+    let x64: uint64_t;
+    let x65: uint64_t;
+    let x66: uint64_t;
+    let x67: uint64_t;
+    let x68: uint64_t;
+    let x69: uint64_t;
+    let x70: uint64_t;
+    let x71: uint64_t;
+    let x72: uint64_t;
+    let x73: uint64_t;
+    let x74: uint64_t;
+    let x75: uint64_t;
+    let x76: uint32_t;
+    let x77: uint64_t;
+    let x78: uint64_t;
+    let x79: uint64_t;
+    let x80: uint64_t;
+    let x81: uint64_t;
+    let x82: uint64_t;
+    let x83: uint64_t;
+    let x84: uint64_t;
+    let x85: uint64_t;
+    let x86: uint64_t;
+    let x87: uint64_t;
+    let x88: uint32_t;
+    let x89: uint64_t;
+    let x90: uint64_t;
+    let x91: uint32_t;
+    let x92: uint64_t;
+    let x93: uint64_t;
+    let x94: uint32_t;
+    let x95: uint64_t;
+    let x96: uint64_t;
+    let x97: uint32_t;
+    let x98: uint64_t;
+    let x99: uint64_t;
+    let x100: uint32_t;
+    let x101: uint64_t;
+    let x102: uint64_t;
+    let x103: uint32_t;
+    let x104: uint64_t;
+    let x105: uint64_t;
+    let x106: uint32_t;
+    let x107: uint64_t;
+    let x108: uint64_t;
+    let x109: uint32_t;
+    let x110: uint64_t;
+    let x111: uint64_t;
+    let x112: uint32_t;
+    let x113: uint64_t;
+    let x114: uint64_t;
+    let x115: uint32_t;
+    let x116: uint32_t;
+    let x117: uint32_t;
+    let x118: fiat_25519_uint1;
+    let x119: uint32_t;
+    let x120: uint32_t;
     x1 = (*arg1.offset(9 as core::ffi::c_int as isize))
         .wrapping_mul(0x13 as core::ffi::c_int as core::ffi::c_uint);
     x2 = x1.wrapping_mul(0x2 as core::ffi::c_int as core::ffi::c_uint);
@@ -2543,29 +2543,29 @@ unsafe extern "C" fn fiat_25519_carry_square(mut out1: *mut uint32_t, mut arg1: 
     *out1.offset(9 as core::ffi::c_int as isize) = x112;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_carry(mut out1: *mut uint32_t, mut arg1: *const uint32_t) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint32_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
-    let mut x11: uint32_t = 0;
-    let mut x12: uint32_t = 0;
-    let mut x13: uint32_t = 0;
-    let mut x14: uint32_t = 0;
-    let mut x15: uint32_t = 0;
-    let mut x16: uint32_t = 0;
-    let mut x17: uint32_t = 0;
-    let mut x18: uint32_t = 0;
-    let mut x19: uint32_t = 0;
-    let mut x20: uint32_t = 0;
-    let mut x21: uint32_t = 0;
-    let mut x22: uint32_t = 0;
+unsafe extern "C" fn fiat_25519_carry(out1: *mut uint32_t, arg1: *const uint32_t) {
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint32_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
+    let x11: uint32_t;
+    let x12: uint32_t;
+    let x13: uint32_t;
+    let x14: uint32_t;
+    let x15: uint32_t;
+    let x16: uint32_t;
+    let x17: uint32_t;
+    let x18: uint32_t;
+    let x19: uint32_t;
+    let x20: uint32_t;
+    let x21: uint32_t;
+    let x22: uint32_t;
     x1 = *arg1.offset(0 as core::ffi::c_int as isize);
     x2 = (x1 >> 26 as core::ffi::c_int).wrapping_add(*arg1.offset(1 as core::ffi::c_int as isize));
     x3 = (x2 >> 25 as core::ffi::c_int).wrapping_add(*arg1.offset(2 as core::ffi::c_int as isize));
@@ -2605,20 +2605,20 @@ unsafe extern "C" fn fiat_25519_carry(mut out1: *mut uint32_t, mut arg1: *const 
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_add(
-    mut out1: *mut uint32_t,
-    mut arg1: *const uint32_t,
-    mut arg2: *const uint32_t,
+    out1: *mut uint32_t,
+    arg1: *const uint32_t,
+    arg2: *const uint32_t,
 ) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint32_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint32_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
     x1 = (*arg1.offset(0 as core::ffi::c_int as isize))
         .wrapping_add(*arg2.offset(0 as core::ffi::c_int as isize));
     x2 = (*arg1.offset(1 as core::ffi::c_int as isize))
@@ -2652,20 +2652,20 @@ unsafe extern "C" fn fiat_25519_add(
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_sub(
-    mut out1: *mut uint32_t,
-    mut arg1: *const uint32_t,
-    mut arg2: *const uint32_t,
+    out1: *mut uint32_t,
+    arg1: *const uint32_t,
+    arg2: *const uint32_t,
 ) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint32_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint32_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
     x1 = (0x7ffffda as core::ffi::c_uint)
         .wrapping_add(*arg1.offset(0 as core::ffi::c_int as isize))
         .wrapping_sub(*arg2.offset(0 as core::ffi::c_int as isize));
@@ -2708,17 +2708,17 @@ unsafe extern "C" fn fiat_25519_sub(
     *out1.offset(9 as core::ffi::c_int as isize) = x10;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_opp(mut out1: *mut uint32_t, mut arg1: *const uint32_t) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint32_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
+unsafe extern "C" fn fiat_25519_opp(out1: *mut uint32_t, arg1: *const uint32_t) {
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint32_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
     x1 =
         (0x7ffffda as core::ffi::c_uint).wrapping_sub(*arg1.offset(0 as core::ffi::c_int as isize));
     x2 =
@@ -2751,11 +2751,11 @@ unsafe extern "C" fn fiat_25519_opp(mut out1: *mut uint32_t, mut arg1: *const ui
     *out1.offset(9 as core::ffi::c_int as isize) = x10;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_selectznz(
-    mut out1: *mut uint32_t,
-    mut arg1: fiat_25519_uint1,
-    mut arg2: *const uint32_t,
-    mut arg3: *const uint32_t,
+unsafe extern "C" fn _25519_selectznz(
+    out1: *mut uint32_t,
+    arg1: fiat_25519_uint1,
+    arg2: *const uint32_t,
+    arg3: *const uint32_t,
 ) {
     let mut x1: uint32_t = 0;
     let mut x2: uint32_t = 0;
@@ -2839,7 +2839,7 @@ unsafe extern "C" fn fiat_25519_selectznz(
     *out1.offset(9 as core::ffi::c_int as isize) = x10;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_to_bytes(mut out1: *mut uint8_t, mut arg1: *const uint32_t) {
+unsafe extern "C" fn fiat_25519_to_bytes(out1: *mut uint8_t, arg1: *const uint32_t) {
     let mut x1: uint32_t = 0;
     let mut x2: fiat_25519_uint1 = 0;
     let mut x3: uint32_t = 0;
@@ -2881,82 +2881,82 @@ unsafe extern "C" fn fiat_25519_to_bytes(mut out1: *mut uint8_t, mut arg1: *cons
     let mut x39: fiat_25519_uint1 = 0;
     let mut x40: uint32_t = 0;
     let mut x41: fiat_25519_uint1 = 0;
-    let mut x42: uint32_t = 0;
-    let mut x43: uint32_t = 0;
-    let mut x44: uint32_t = 0;
-    let mut x45: uint32_t = 0;
-    let mut x46: uint32_t = 0;
-    let mut x47: uint32_t = 0;
-    let mut x48: uint32_t = 0;
-    let mut x49: uint32_t = 0;
-    let mut x50: uint8_t = 0;
-    let mut x51: uint32_t = 0;
-    let mut x52: uint8_t = 0;
-    let mut x53: uint32_t = 0;
-    let mut x54: uint8_t = 0;
-    let mut x55: uint8_t = 0;
-    let mut x56: uint32_t = 0;
-    let mut x57: uint8_t = 0;
-    let mut x58: uint32_t = 0;
-    let mut x59: uint8_t = 0;
-    let mut x60: uint32_t = 0;
-    let mut x61: uint8_t = 0;
-    let mut x62: uint8_t = 0;
-    let mut x63: uint32_t = 0;
-    let mut x64: uint8_t = 0;
-    let mut x65: uint32_t = 0;
-    let mut x66: uint8_t = 0;
-    let mut x67: uint32_t = 0;
-    let mut x68: uint8_t = 0;
-    let mut x69: uint8_t = 0;
-    let mut x70: uint32_t = 0;
-    let mut x71: uint8_t = 0;
-    let mut x72: uint32_t = 0;
-    let mut x73: uint8_t = 0;
-    let mut x74: uint32_t = 0;
-    let mut x75: uint8_t = 0;
-    let mut x76: uint8_t = 0;
-    let mut x77: uint32_t = 0;
-    let mut x78: uint8_t = 0;
-    let mut x79: uint32_t = 0;
-    let mut x80: uint8_t = 0;
-    let mut x81: uint32_t = 0;
-    let mut x82: uint8_t = 0;
-    let mut x83: uint8_t = 0;
-    let mut x84: uint8_t = 0;
-    let mut x85: uint32_t = 0;
-    let mut x86: uint8_t = 0;
-    let mut x87: uint32_t = 0;
-    let mut x88: uint8_t = 0;
-    let mut x89: fiat_25519_uint1 = 0;
-    let mut x90: uint32_t = 0;
-    let mut x91: uint8_t = 0;
-    let mut x92: uint32_t = 0;
-    let mut x93: uint8_t = 0;
-    let mut x94: uint32_t = 0;
-    let mut x95: uint8_t = 0;
-    let mut x96: uint8_t = 0;
-    let mut x97: uint32_t = 0;
-    let mut x98: uint8_t = 0;
-    let mut x99: uint32_t = 0;
-    let mut x100: uint8_t = 0;
-    let mut x101: uint32_t = 0;
-    let mut x102: uint8_t = 0;
-    let mut x103: uint8_t = 0;
-    let mut x104: uint32_t = 0;
-    let mut x105: uint8_t = 0;
-    let mut x106: uint32_t = 0;
-    let mut x107: uint8_t = 0;
-    let mut x108: uint32_t = 0;
-    let mut x109: uint8_t = 0;
-    let mut x110: uint8_t = 0;
-    let mut x111: uint32_t = 0;
-    let mut x112: uint8_t = 0;
-    let mut x113: uint32_t = 0;
-    let mut x114: uint8_t = 0;
-    let mut x115: uint32_t = 0;
-    let mut x116: uint8_t = 0;
-    let mut x117: uint8_t = 0;
+    let x42: uint32_t;
+    let x43: uint32_t;
+    let x44: uint32_t;
+    let x45: uint32_t;
+    let x46: uint32_t;
+    let x47: uint32_t;
+    let x48: uint32_t;
+    let x49: uint32_t;
+    let x50: uint8_t;
+    let x51: uint32_t;
+    let x52: uint8_t;
+    let x53: uint32_t;
+    let x54: uint8_t;
+    let x55: uint8_t;
+    let x56: uint32_t;
+    let x57: uint8_t;
+    let x58: uint32_t;
+    let x59: uint8_t;
+    let x60: uint32_t;
+    let x61: uint8_t;
+    let x62: uint8_t;
+    let x63: uint32_t;
+    let x64: uint8_t;
+    let x65: uint32_t;
+    let x66: uint8_t;
+    let x67: uint32_t;
+    let x68: uint8_t;
+    let x69: uint8_t;
+    let x70: uint32_t;
+    let x71: uint8_t;
+    let x72: uint32_t;
+    let x73: uint8_t;
+    let x74: uint32_t;
+    let x75: uint8_t;
+    let x76: uint8_t;
+    let x77: uint32_t;
+    let x78: uint8_t;
+    let x79: uint32_t;
+    let x80: uint8_t;
+    let x81: uint32_t;
+    let x82: uint8_t;
+    let x83: uint8_t;
+    let x84: uint8_t;
+    let x85: uint32_t;
+    let x86: uint8_t;
+    let x87: uint32_t;
+    let x88: uint8_t;
+    let x89: fiat_25519_uint1;
+    let x90: uint32_t;
+    let x91: uint8_t;
+    let x92: uint32_t;
+    let x93: uint8_t;
+    let x94: uint32_t;
+    let x95: uint8_t;
+    let x96: uint8_t;
+    let x97: uint32_t;
+    let x98: uint8_t;
+    let x99: uint32_t;
+    let x100: uint8_t;
+    let x101: uint32_t;
+    let x102: uint8_t;
+    let x103: uint8_t;
+    let x104: uint32_t;
+    let x105: uint8_t;
+    let x106: uint32_t;
+    let x107: uint8_t;
+    let x108: uint32_t;
+    let x109: uint8_t;
+    let x110: uint8_t;
+    let x111: uint32_t;
+    let x112: uint8_t;
+    let x113: uint32_t;
+    let x114: uint8_t;
+    let x115: uint32_t;
+    let x116: uint8_t;
+    let x117: uint8_t;
     fiat_25519_subborrowx_u26(
         &mut x1,
         &mut x2,
@@ -3213,85 +3213,85 @@ unsafe extern "C" fn fiat_25519_to_bytes(mut out1: *mut uint8_t, mut arg1: *cons
     *out1.offset(31 as core::ffi::c_int as isize) = x117;
 }
 #[inline]
-unsafe extern "C" fn fiat_25519_from_bytes(mut out1: *mut uint32_t, mut arg1: *const uint8_t) {
-    let mut x1: uint32_t = 0;
-    let mut x2: uint32_t = 0;
-    let mut x3: uint32_t = 0;
-    let mut x4: uint32_t = 0;
-    let mut x5: uint32_t = 0;
-    let mut x6: uint32_t = 0;
-    let mut x7: uint32_t = 0;
-    let mut x8: uint32_t = 0;
-    let mut x9: uint32_t = 0;
-    let mut x10: uint32_t = 0;
-    let mut x11: uint32_t = 0;
-    let mut x12: uint32_t = 0;
-    let mut x13: uint32_t = 0;
-    let mut x14: uint32_t = 0;
-    let mut x15: uint32_t = 0;
-    let mut x16: uint8_t = 0;
-    let mut x17: uint32_t = 0;
-    let mut x18: uint32_t = 0;
-    let mut x19: uint32_t = 0;
-    let mut x20: uint32_t = 0;
-    let mut x21: uint32_t = 0;
-    let mut x22: uint32_t = 0;
-    let mut x23: uint32_t = 0;
-    let mut x24: uint32_t = 0;
-    let mut x25: uint32_t = 0;
-    let mut x26: uint32_t = 0;
-    let mut x27: uint32_t = 0;
-    let mut x28: uint32_t = 0;
-    let mut x29: uint32_t = 0;
-    let mut x30: uint32_t = 0;
-    let mut x31: uint32_t = 0;
-    let mut x32: uint8_t = 0;
-    let mut x33: uint32_t = 0;
-    let mut x34: uint32_t = 0;
-    let mut x35: uint32_t = 0;
-    let mut x36: uint32_t = 0;
-    let mut x37: uint8_t = 0;
-    let mut x38: uint32_t = 0;
-    let mut x39: uint32_t = 0;
-    let mut x40: uint32_t = 0;
-    let mut x41: uint32_t = 0;
-    let mut x42: uint8_t = 0;
-    let mut x43: uint32_t = 0;
-    let mut x44: uint32_t = 0;
-    let mut x45: uint32_t = 0;
-    let mut x46: uint32_t = 0;
-    let mut x47: uint8_t = 0;
-    let mut x48: uint32_t = 0;
-    let mut x49: uint32_t = 0;
-    let mut x50: uint32_t = 0;
-    let mut x51: uint32_t = 0;
-    let mut x52: uint8_t = 0;
-    let mut x53: uint32_t = 0;
-    let mut x54: uint32_t = 0;
-    let mut x55: uint32_t = 0;
-    let mut x56: uint32_t = 0;
-    let mut x57: uint32_t = 0;
-    let mut x58: uint32_t = 0;
-    let mut x59: uint32_t = 0;
-    let mut x60: uint8_t = 0;
-    let mut x61: uint32_t = 0;
-    let mut x62: uint32_t = 0;
-    let mut x63: uint32_t = 0;
-    let mut x64: uint32_t = 0;
-    let mut x65: uint8_t = 0;
-    let mut x66: uint32_t = 0;
-    let mut x67: uint32_t = 0;
-    let mut x68: uint32_t = 0;
-    let mut x69: uint32_t = 0;
-    let mut x70: uint8_t = 0;
-    let mut x71: uint32_t = 0;
-    let mut x72: uint32_t = 0;
-    let mut x73: uint32_t = 0;
-    let mut x74: uint32_t = 0;
-    let mut x75: uint8_t = 0;
-    let mut x76: uint32_t = 0;
-    let mut x77: uint32_t = 0;
-    let mut x78: uint32_t = 0;
+unsafe extern "C" fn fiat_25519_from_bytes(out1: *mut uint32_t, arg1: *const uint8_t) {
+    let x1: uint32_t;
+    let x2: uint32_t;
+    let x3: uint32_t;
+    let x4: uint32_t;
+    let x5: uint32_t;
+    let x6: uint32_t;
+    let x7: uint32_t;
+    let x8: uint32_t;
+    let x9: uint32_t;
+    let x10: uint32_t;
+    let x11: uint32_t;
+    let x12: uint32_t;
+    let x13: uint32_t;
+    let x14: uint32_t;
+    let x15: uint32_t;
+    let x16: uint8_t;
+    let x17: uint32_t;
+    let x18: uint32_t;
+    let x19: uint32_t;
+    let x20: uint32_t;
+    let x21: uint32_t;
+    let x22: uint32_t;
+    let x23: uint32_t;
+    let x24: uint32_t;
+    let x25: uint32_t;
+    let x26: uint32_t;
+    let x27: uint32_t;
+    let x28: uint32_t;
+    let x29: uint32_t;
+    let x30: uint32_t;
+    let x31: uint32_t;
+    let x32: uint8_t;
+    let x33: uint32_t;
+    let x34: uint32_t;
+    let x35: uint32_t;
+    let x36: uint32_t;
+    let x37: uint8_t;
+    let x38: uint32_t;
+    let x39: uint32_t;
+    let x40: uint32_t;
+    let x41: uint32_t;
+    let x42: uint8_t;
+    let x43: uint32_t;
+    let x44: uint32_t;
+    let x45: uint32_t;
+    let x46: uint32_t;
+    let x47: uint8_t;
+    let x48: uint32_t;
+    let x49: uint32_t;
+    let x50: uint32_t;
+    let x51: uint32_t;
+    let x52: uint8_t;
+    let x53: uint32_t;
+    let x54: uint32_t;
+    let x55: uint32_t;
+    let x56: uint32_t;
+    let x57: uint32_t;
+    let x58: uint32_t;
+    let x59: uint32_t;
+    let x60: uint8_t;
+    let x61: uint32_t;
+    let x62: uint32_t;
+    let x63: uint32_t;
+    let x64: uint32_t;
+    let x65: uint8_t;
+    let x66: uint32_t;
+    let x67: uint32_t;
+    let x68: uint32_t;
+    let x69: uint32_t;
+    let x70: uint8_t;
+    let x71: uint32_t;
+    let x72: uint32_t;
+    let x73: uint32_t;
+    let x74: uint32_t;
+    let x75: uint8_t;
+    let x76: uint32_t;
+    let x77: uint32_t;
+    let x78: uint32_t;
     x1 = (*arg1.offset(31 as core::ffi::c_int as isize) as uint32_t) << 18 as core::ffi::c_int;
     x2 = (*arg1.offset(30 as core::ffi::c_int as isize) as uint32_t) << 10 as core::ffi::c_int;
     x3 = (*arg1.offset(29 as core::ffi::c_int as isize) as uint32_t) << 2 as core::ffi::c_int;
@@ -3383,56 +3383,56 @@ unsafe extern "C" fn fiat_25519_from_bytes(mut out1: *mut uint32_t, mut arg1: *c
 }
 #[inline]
 unsafe extern "C" fn fiat_25519_carry_scmul_121666(
-    mut out1: *mut uint32_t,
-    mut arg1: *const uint32_t,
+    out1: *mut uint32_t,
+    arg1: *const uint32_t,
 ) {
-    let mut x1: uint64_t = 0;
-    let mut x2: uint64_t = 0;
-    let mut x3: uint64_t = 0;
-    let mut x4: uint64_t = 0;
-    let mut x5: uint64_t = 0;
-    let mut x6: uint64_t = 0;
-    let mut x7: uint64_t = 0;
-    let mut x8: uint64_t = 0;
-    let mut x9: uint64_t = 0;
-    let mut x10: uint64_t = 0;
-    let mut x11: uint32_t = 0;
-    let mut x12: uint32_t = 0;
-    let mut x13: uint64_t = 0;
-    let mut x14: uint32_t = 0;
-    let mut x15: uint32_t = 0;
-    let mut x16: uint64_t = 0;
-    let mut x17: uint32_t = 0;
-    let mut x18: uint32_t = 0;
-    let mut x19: uint64_t = 0;
-    let mut x20: uint32_t = 0;
-    let mut x21: uint32_t = 0;
-    let mut x22: uint64_t = 0;
-    let mut x23: uint32_t = 0;
-    let mut x24: uint32_t = 0;
-    let mut x25: uint64_t = 0;
-    let mut x26: uint32_t = 0;
-    let mut x27: uint32_t = 0;
-    let mut x28: uint64_t = 0;
-    let mut x29: uint32_t = 0;
-    let mut x30: uint32_t = 0;
-    let mut x31: uint64_t = 0;
-    let mut x32: uint32_t = 0;
-    let mut x33: uint32_t = 0;
-    let mut x34: uint64_t = 0;
-    let mut x35: uint32_t = 0;
-    let mut x36: uint32_t = 0;
-    let mut x37: uint64_t = 0;
-    let mut x38: uint32_t = 0;
-    let mut x39: uint32_t = 0;
-    let mut x40: uint32_t = 0;
-    let mut x41: uint32_t = 0;
-    let mut x42: fiat_25519_uint1 = 0;
-    let mut x43: uint32_t = 0;
-    let mut x44: uint32_t = 0;
-    let mut x45: fiat_25519_uint1 = 0;
-    let mut x46: uint32_t = 0;
-    let mut x47: uint32_t = 0;
+    let x1: uint64_t;
+    let x2: uint64_t;
+    let x3: uint64_t;
+    let x4: uint64_t;
+    let x5: uint64_t;
+    let x6: uint64_t;
+    let x7: uint64_t;
+    let x8: uint64_t;
+    let x9: uint64_t;
+    let x10: uint64_t;
+    let x11: uint32_t;
+    let x12: uint32_t;
+    let x13: uint64_t;
+    let x14: uint32_t;
+    let x15: uint32_t;
+    let x16: uint64_t;
+    let x17: uint32_t;
+    let x18: uint32_t;
+    let x19: uint64_t;
+    let x20: uint32_t;
+    let x21: uint32_t;
+    let x22: uint64_t;
+    let x23: uint32_t;
+    let x24: uint32_t;
+    let x25: uint64_t;
+    let x26: uint32_t;
+    let x27: uint32_t;
+    let x28: uint64_t;
+    let x29: uint32_t;
+    let x30: uint32_t;
+    let x31: uint64_t;
+    let x32: uint32_t;
+    let x33: uint32_t;
+    let x34: uint64_t;
+    let x35: uint32_t;
+    let x36: uint32_t;
+    let x37: uint64_t;
+    let x38: uint32_t;
+    let x39: uint32_t;
+    let x40: uint32_t;
+    let x41: uint32_t;
+    let x42: fiat_25519_uint1;
+    let x43: uint32_t;
+    let x44: uint32_t;
+    let x45: fiat_25519_uint1;
+    let x46: uint32_t;
+    let x47: uint32_t;
     x1 = (0x1db42 as core::ffi::c_uint as uint64_t)
         .wrapping_mul(*arg1.offset(9 as core::ffi::c_int as isize) as u64);
     x2 = (0x1db42 as core::ffi::c_uint as uint64_t)
@@ -3501,29 +3501,29 @@ unsafe extern "C" fn fiat_25519_carry_scmul_121666(
     *out1.offset(8 as core::ffi::c_int as isize) = x36;
     *out1.offset(9 as core::ffi::c_int as isize) = x39;
 }
-unsafe extern "C" fn load_3(mut in_0: *const uint8_t) -> uint64_t {
-    let mut result: uint64_t = 0;
+unsafe extern "C" fn load_3(in_0: *const uint8_t) -> uint64_t {
+    let mut result: uint64_t;
     result = *in_0.offset(0 as core::ffi::c_int as isize) as uint64_t;
     result |= (*in_0.offset(1 as core::ffi::c_int as isize) as uint64_t) << 8 as core::ffi::c_int;
     result |= (*in_0.offset(2 as core::ffi::c_int as isize) as uint64_t) << 16 as core::ffi::c_int;
     return result;
 }
-unsafe extern "C" fn load_4(mut in_0: *const uint8_t) -> uint64_t {
-    let mut result: uint64_t = 0;
+unsafe extern "C" fn load_4(in_0: *const uint8_t) -> uint64_t {
+    let mut result: uint64_t;
     result = *in_0.offset(0 as core::ffi::c_int as isize) as uint64_t;
     result |= (*in_0.offset(1 as core::ffi::c_int as isize) as uint64_t) << 8 as core::ffi::c_int;
     result |= (*in_0.offset(2 as core::ffi::c_int as isize) as uint64_t) << 16 as core::ffi::c_int;
     result |= (*in_0.offset(3 as core::ffi::c_int as isize) as uint64_t) << 24 as core::ffi::c_int;
     return result;
 }
-unsafe extern "C" fn fe_frombytes_strict(mut h: *mut fe, mut s: *const uint8_t) {
+unsafe extern "C" fn fe_frombytes_strict(h: *mut fe, s: *const uint8_t) {
     fiat_25519_from_bytes(((*h).v).as_mut_ptr(), s);
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_frombytes(mut h: *mut fe, mut s: *const uint8_t) {
+unsafe extern "C" fn fe_frombytes(h: *mut fe, s: *const uint8_t) {
     let mut s_copy: [uint8_t; 32] = [0; 32];
     OPENSSL_memcpy(
         s_copy.as_mut_ptr() as *mut core::ffi::c_void,
@@ -3535,28 +3535,28 @@ unsafe extern "C" fn fe_frombytes(mut h: *mut fe, mut s: *const uint8_t) {
         & 0x7f as core::ffi::c_int) as uint8_t;
     fe_frombytes_strict(h, s_copy.as_mut_ptr() as *const uint8_t);
 }
-unsafe extern "C" fn fe_tobytes(mut s: *mut uint8_t, mut f: *const fe) {
+unsafe extern "C" fn fe_tobytes(s: *mut uint8_t, f: *const fe) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
     }
     fiat_25519_to_bytes(s, ((*f).v).as_ptr());
 }
-unsafe extern "C" fn fe_0(mut h: *mut fe) {
+unsafe extern "C" fn fe_0(h: *mut fe) {
     OPENSSL_memset(
         h as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
         core::mem::size_of::<fe>() as u32,
     );
 }
-unsafe extern "C" fn fe_loose_0(mut h: *mut fe_loose) {
+unsafe extern "C" fn fe_loose_0(h: *mut fe_loose) {
     OPENSSL_memset(
         h as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
         core::mem::size_of::<fe_loose>() as u32,
     );
 }
-unsafe extern "C" fn fe_1(mut h: *mut fe) {
+unsafe extern "C" fn fe_1(h: *mut fe) {
     OPENSSL_memset(
         h as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
@@ -3564,7 +3564,7 @@ unsafe extern "C" fn fe_1(mut h: *mut fe) {
     );
     (*h).v[0 as core::ffi::c_int as usize] = 1 as core::ffi::c_int as fe_limb_t;
 }
-unsafe extern "C" fn fe_loose_1(mut h: *mut fe_loose) {
+unsafe extern "C" fn fe_loose_1(h: *mut fe_loose) {
     OPENSSL_memset(
         h as *mut core::ffi::c_void,
         0 as core::ffi::c_int,
@@ -3572,7 +3572,7 @@ unsafe extern "C" fn fe_loose_1(mut h: *mut fe_loose) {
     );
     (*h).v[0 as core::ffi::c_int as usize] = 1 as core::ffi::c_int as fe_limb_t;
 }
-unsafe extern "C" fn fe_add(mut h: *mut fe_loose, mut f: *const fe, mut g: *const fe) {
+unsafe extern "C" fn fe_add(h: *mut fe_loose, f: *const fe, g: *const fe) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3587,7 +3587,7 @@ unsafe extern "C" fn fe_add(mut h: *mut fe_loose, mut f: *const fe, mut g: *cons
         _assert_fe_i_1 = _assert_fe_i_1.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_sub(mut h: *mut fe_loose, mut f: *const fe, mut g: *const fe) {
+unsafe extern "C" fn fe_sub(h: *mut fe_loose, f: *const fe, g: *const fe) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3602,7 +3602,7 @@ unsafe extern "C" fn fe_sub(mut h: *mut fe_loose, mut f: *const fe, mut g: *cons
         _assert_fe_i_1 = _assert_fe_i_1.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_carry(mut h: *mut fe, mut f: *const fe_loose) {
+unsafe extern "C" fn fe_carry(h: *mut fe, f: *const fe_loose) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3614,9 +3614,9 @@ unsafe extern "C" fn fe_carry(mut h: *mut fe, mut f: *const fe_loose) {
     }
 }
 unsafe extern "C" fn fe_mul_impl(
-    mut out: *mut fe_limb_t,
-    mut in1: *const fe_limb_t,
-    mut in2: *const fe_limb_t,
+    out: *mut fe_limb_t,
+    in1: *const fe_limb_t,
+    in2: *const fe_limb_t,
 ) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
@@ -3632,25 +3632,25 @@ unsafe extern "C" fn fe_mul_impl(
         _assert_fe_i_1 = _assert_fe_i_1.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_mul_ltt(mut h: *mut fe_loose, mut f: *const fe, mut g: *const fe) {
+unsafe extern "C" fn fe_mul_ltt(h: *mut fe_loose, f: *const fe, g: *const fe) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_mul_llt(mut h: *mut fe_loose, mut f: *const fe_loose, mut g: *const fe) {
+unsafe extern "C" fn fe_mul_llt(h: *mut fe_loose, f: *const fe_loose, g: *const fe) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_mul_ttt(mut h: *mut fe, mut f: *const fe, mut g: *const fe) {
+unsafe extern "C" fn fe_mul_ttt(h: *mut fe, f: *const fe, g: *const fe) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_mul_tlt(mut h: *mut fe, mut f: *const fe_loose, mut g: *const fe) {
+unsafe extern "C" fn fe_mul_tlt(h: *mut fe, f: *const fe_loose, g: *const fe) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_mul_ttl(mut h: *mut fe, mut f: *const fe, mut g: *const fe_loose) {
+unsafe extern "C" fn fe_mul_ttl(h: *mut fe, f: *const fe, g: *const fe_loose) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_mul_tll(mut h: *mut fe, mut f: *const fe_loose, mut g: *const fe_loose) {
+unsafe extern "C" fn fe_mul_tll(h: *mut fe, f: *const fe_loose, g: *const fe_loose) {
     fe_mul_impl(((*h).v).as_mut_ptr(), ((*f).v).as_ptr(), ((*g).v).as_ptr());
 }
-unsafe extern "C" fn fe_sq_tl(mut h: *mut fe, mut f: *const fe_loose) {
+unsafe extern "C" fn fe_sq_tl(h: *mut fe, f: *const fe_loose) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3661,7 +3661,7 @@ unsafe extern "C" fn fe_sq_tl(mut h: *mut fe, mut f: *const fe_loose) {
         _assert_fe_i_0 = _assert_fe_i_0.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_sq_tt(mut h: *mut fe, mut f: *const fe) {
+unsafe extern "C" fn fe_sq_tt(h: *mut fe, f: *const fe) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3672,7 +3672,7 @@ unsafe extern "C" fn fe_sq_tt(mut h: *mut fe, mut f: *const fe) {
         _assert_fe_i_0 = _assert_fe_i_0.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_cswap(mut f: *mut fe, mut g: *mut fe, mut b: fe_limb_t) {
+unsafe extern "C" fn fe_cswap(f: *mut fe, g: *mut fe, mut b: fe_limb_t) {
     b = (0 as core::ffi::c_int as core::ffi::c_uint).wrapping_sub(b);
     let mut i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while i < 10 as core::ffi::c_int as core::ffi::c_uint {
@@ -3685,7 +3685,7 @@ unsafe extern "C" fn fe_cswap(mut f: *mut fe, mut g: *mut fe, mut b: fe_limb_t) 
         i = i.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_mul121666(mut h: *mut fe, mut f: *const fe_loose) {
+unsafe extern "C" fn fe_mul121666(h: *mut fe, f: *const fe_loose) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3696,7 +3696,7 @@ unsafe extern "C" fn fe_mul121666(mut h: *mut fe, mut f: *const fe_loose) {
         _assert_fe_i_0 = _assert_fe_i_0.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_neg(mut h: *mut fe_loose, mut f: *const fe) {
+unsafe extern "C" fn fe_neg(h: *mut fe_loose, f: *const fe) {
     let mut _assert_fe_i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while _assert_fe_i < 10 as core::ffi::c_int as core::ffi::c_uint {
         _assert_fe_i = _assert_fe_i.wrapping_add(1);
@@ -3707,7 +3707,7 @@ unsafe extern "C" fn fe_neg(mut h: *mut fe_loose, mut f: *const fe) {
         _assert_fe_i_0 = _assert_fe_i_0.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_cmov(mut f: *mut fe_loose, mut g: *const fe_loose, mut b: fe_limb_t) {
+unsafe extern "C" fn fe_cmov(f: *mut fe_loose, g: *const fe_loose, mut b: fe_limb_t) {
     b = (0 as core::ffi::c_int as core::ffi::c_uint).wrapping_sub(b);
     let mut i: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
     while i < 10 as core::ffi::c_int as core::ffi::c_uint {
@@ -3718,18 +3718,18 @@ unsafe extern "C" fn fe_cmov(mut f: *mut fe_loose, mut g: *const fe_loose, mut b
         i = i.wrapping_add(1);
     }
 }
-unsafe extern "C" fn fe_copy(mut h: *mut fe, mut f: *const fe) {
+unsafe extern "C" fn fe_copy(h: *mut fe, f: *const fe) {
     fe_limbs_copy(((*h).v).as_mut_ptr(), ((*f).v).as_ptr());
 }
-unsafe extern "C" fn fe_copy_lt(mut h: *mut fe_loose, mut f: *const fe) {
+unsafe extern "C" fn fe_copy_lt(h: *mut fe_loose, f: *const fe) {
     fe_limbs_copy(((*h).v).as_mut_ptr(), ((*f).v).as_ptr());
 }
-unsafe extern "C" fn fe_loose_invert(mut out: *mut fe, mut z: *const fe_loose) {
+unsafe extern "C" fn fe_loose_invert(out: *mut fe, z: *const fe_loose) {
     let mut t0: fe = fe { v: [0; 10] };
     let mut t1: fe = fe { v: [0; 10] };
     let mut t2: fe = fe { v: [0; 10] };
     let mut t3: fe = fe { v: [0; 10] };
-    let mut i: core::ffi::c_int = 0;
+    let mut i: core::ffi::c_int;
     fe_sq_tl(&mut t0, z);
     fe_sq_tt(&mut t1, &mut t0);
     i = 1 as core::ffi::c_int;
@@ -3798,12 +3798,12 @@ unsafe extern "C" fn fe_loose_invert(mut out: *mut fe, mut z: *const fe_loose) {
     }
     fe_mul_ttt(out, &mut t1, &mut t0);
 }
-unsafe extern "C" fn fe_invert(mut out: *mut fe, mut z: *const fe) {
+unsafe extern "C" fn fe_invert(out: *mut fe, z: *const fe) {
     let mut l: fe_loose = fe_loose { v: [0; 10] };
     fe_copy_lt(&mut l, z);
     fe_loose_invert(out, &mut l);
 }
-unsafe extern "C" fn fe_isnonzero(mut f: *const fe_loose) -> core::ffi::c_int {
+unsafe extern "C" fn fe_isnonzero(f: *const fe_loose) -> core::ffi::c_int {
     let mut tight: fe = fe { v: [0; 10] };
     fe_carry(&mut tight, f);
     let mut s: [uint8_t; 32] = [0; 32];
@@ -3848,22 +3848,22 @@ unsafe extern "C" fn fe_isnonzero(mut f: *const fe_loose) -> core::ffi::c_int {
         core::mem::size_of::<[uint8_t; 32]>() as u32,
     ) != 0 as core::ffi::c_int) as core::ffi::c_int;
 }
-unsafe extern "C" fn fe_isnegative(mut f: *const fe) -> core::ffi::c_int {
+unsafe extern "C" fn fe_isnegative(f: *const fe) -> core::ffi::c_int {
     let mut s: [uint8_t; 32] = [0; 32];
     fe_tobytes(s.as_mut_ptr(), f);
     return s[0 as core::ffi::c_int as usize] as core::ffi::c_int & 1 as core::ffi::c_int;
 }
-unsafe extern "C" fn fe_sq2_tt(mut h: *mut fe, mut f: *const fe) {
+unsafe extern "C" fn fe_sq2_tt(h: *mut fe, f: *const fe) {
     fe_sq_tt(h, f);
     let mut tmp: fe_loose = fe_loose { v: [0; 10] };
     fe_add(&mut tmp, h, h);
     fe_carry(h, &mut tmp);
 }
-unsafe extern "C" fn fe_pow22523(mut out: *mut fe, mut z: *const fe) {
+unsafe extern "C" fn fe_pow22523(out: *mut fe, z: *const fe) {
     let mut t0: fe = fe { v: [0; 10] };
     let mut t1: fe = fe { v: [0; 10] };
     let mut t2: fe = fe { v: [0; 10] };
-    let mut i: core::ffi::c_int = 0;
+    let mut i: core::ffi::c_int;
     fe_sq_tt(&mut t0, z);
     fe_sq_tt(&mut t1, &mut t0);
     i = 1 as core::ffi::c_int;
@@ -3934,8 +3934,8 @@ unsafe extern "C" fn fe_pow22523(mut out: *mut fe, mut z: *const fe) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_ge_frombytes_vartime(
-    mut h: *mut ge_p3,
-    mut s: *const uint8_t,
+    h: *mut ge_p3,
+    s: *const uint8_t,
 ) -> core::ffi::c_int {
     let mut u: fe = fe { v: [0; 10] };
     let mut v: fe_loose = fe_loose { v: [0; 10] };
@@ -3972,45 +3972,45 @@ pub unsafe extern "C" fn x25519_ge_frombytes_vartime(
     fe_mul_ttt(&mut (*h).T, &mut (*h).X, &mut (*h).Y);
     return 1 as core::ffi::c_int;
 }
-unsafe extern "C" fn ge_p2_0(mut h: *mut ge_p2) {
+unsafe extern "C" fn ge_p2_0(h: *mut ge_p2) {
     fe_0(&mut (*h).X);
     fe_1(&mut (*h).Y);
     fe_1(&mut (*h).Z);
 }
-unsafe extern "C" fn ge_p3_0(mut h: *mut ge_p3) {
+unsafe extern "C" fn ge_p3_0(h: *mut ge_p3) {
     fe_0(&mut (*h).X);
     fe_1(&mut (*h).Y);
     fe_1(&mut (*h).Z);
     fe_0(&mut (*h).T);
 }
-unsafe extern "C" fn ge_precomp_0(mut h: *mut ge_precomp) {
+unsafe extern "C" fn ge_precomp_0(h: *mut ge_precomp) {
     fe_loose_1(&mut (*h).yplusx);
     fe_loose_1(&mut (*h).yminusx);
     fe_loose_0(&mut (*h).xy2d);
 }
-unsafe extern "C" fn ge_p3_to_p2(mut r: *mut ge_p2, mut p: *const ge_p3) {
+unsafe extern "C" fn ge_p3_to_p2(r: *mut ge_p2, p: *const ge_p3) {
     fe_copy(&mut (*r).X, &(*p).X);
     fe_copy(&mut (*r).Y, &(*p).Y);
     fe_copy(&mut (*r).Z, &(*p).Z);
 }
-unsafe extern "C" fn x25519_ge_p3_to_cached(mut r: *mut ge_cached, mut p: *const ge_p3) {
+unsafe extern "C" fn x25519_ge_p3_to_cached(r: *mut ge_cached, p: *const ge_p3) {
     fe_add(&mut (*r).YplusX, &(*p).Y, &(*p).X);
     fe_sub(&mut (*r).YminusX, &(*p).Y, &(*p).X);
     fe_copy_lt(&mut (*r).Z, &(*p).Z);
     fe_mul_ltt(&mut (*r).T2d, &(*p).T, &d2);
 }
-unsafe extern "C" fn x25519_ge_p1p1_to_p2(mut r: *mut ge_p2, mut p: *const ge_p1p1) {
+unsafe extern "C" fn x25519_ge_p1p1_to_p2(r: *mut ge_p2, p: *const ge_p1p1) {
     fe_mul_tll(&mut (*r).X, &(*p).X, &(*p).T);
     fe_mul_tll(&mut (*r).Y, &(*p).Y, &(*p).Z);
     fe_mul_tll(&mut (*r).Z, &(*p).Z, &(*p).T);
 }
-unsafe extern "C" fn x25519_ge_p1p1_to_p3(mut r: *mut ge_p3, mut p: *const ge_p1p1) {
+unsafe extern "C" fn x25519_ge_p1p1_to_p3(r: *mut ge_p3, p: *const ge_p1p1) {
     fe_mul_tll(&mut (*r).X, &(*p).X, &(*p).T);
     fe_mul_tll(&mut (*r).Y, &(*p).Y, &(*p).Z);
     fe_mul_tll(&mut (*r).Z, &(*p).Z, &(*p).T);
     fe_mul_tll(&mut (*r).T, &(*p).X, &(*p).Y);
 }
-unsafe extern "C" fn ge_p2_dbl(mut r: *mut ge_p1p1, mut p: *const ge_p2) {
+unsafe extern "C" fn ge_p2_dbl(r: *mut ge_p1p1, p: *const ge_p2) {
     let mut trX: fe = fe { v: [0; 10] };
     let mut trZ: fe = fe { v: [0; 10] };
     let mut trT: fe = fe { v: [0; 10] };
@@ -4027,7 +4027,7 @@ unsafe extern "C" fn ge_p2_dbl(mut r: *mut ge_p1p1, mut p: *const ge_p2) {
     fe_carry(&mut trZ, &mut (*r).Z);
     fe_sub(&mut (*r).T, &mut trT, &mut trZ);
 }
-unsafe extern "C" fn ge_p3_dbl(mut r: *mut ge_p1p1, mut p: *const ge_p3) {
+unsafe extern "C" fn ge_p3_dbl(r: *mut ge_p1p1, p: *const ge_p3) {
     let mut q: ge_p2 = ge_p2 {
         X: fe { v: [0; 10] },
         Y: fe { v: [0; 10] },
@@ -4036,7 +4036,7 @@ unsafe extern "C" fn ge_p3_dbl(mut r: *mut ge_p1p1, mut p: *const ge_p3) {
     ge_p3_to_p2(&mut q, p);
     ge_p2_dbl(r, &mut q);
 }
-unsafe extern "C" fn ge_madd(mut r: *mut ge_p1p1, mut p: *const ge_p3, mut q: *const ge_precomp) {
+unsafe extern "C" fn ge_madd(r: *mut ge_p1p1, p: *const ge_p3, q: *const ge_precomp) {
     let mut trY: fe = fe { v: [0; 10] };
     let mut trZ: fe = fe { v: [0; 10] };
     let mut trT: fe = fe { v: [0; 10] };
@@ -4052,7 +4052,7 @@ unsafe extern "C" fn ge_madd(mut r: *mut ge_p1p1, mut p: *const ge_p3, mut q: *c
     fe_add(&mut (*r).Z, &mut trZ, &mut trT);
     fe_sub(&mut (*r).T, &mut trZ, &mut trT);
 }
-unsafe extern "C" fn ge_msub(mut r: *mut ge_p1p1, mut p: *const ge_p3, mut q: *const ge_precomp) {
+unsafe extern "C" fn ge_msub(r: *mut ge_p1p1, p: *const ge_p3, q: *const ge_precomp) {
     let mut trY: fe = fe { v: [0; 10] };
     let mut trZ: fe = fe { v: [0; 10] };
     let mut trT: fe = fe { v: [0; 10] };
@@ -4069,9 +4069,9 @@ unsafe extern "C" fn ge_msub(mut r: *mut ge_p1p1, mut p: *const ge_p3, mut q: *c
     fe_add(&mut (*r).T, &mut trZ, &mut trT);
 }
 unsafe extern "C" fn x25519_ge_add(
-    mut r: *mut ge_p1p1,
-    mut p: *const ge_p3,
-    mut q: *const ge_cached,
+    r: *mut ge_p1p1,
+    p: *const ge_p3,
+    q: *const ge_cached,
 ) {
     let mut trX: fe = fe { v: [0; 10] };
     let mut trY: fe = fe { v: [0; 10] };
@@ -4091,9 +4091,9 @@ unsafe extern "C" fn x25519_ge_add(
     fe_sub(&mut (*r).T, &mut trZ, &mut trT);
 }
 unsafe extern "C" fn x25519_ge_sub(
-    mut r: *mut ge_p1p1,
-    mut p: *const ge_p3,
-    mut q: *const ge_cached,
+    r: *mut ge_p1p1,
+    p: *const ge_p3,
+    q: *const ge_cached,
 ) {
     let mut trX: fe = fe { v: [0; 10] };
     let mut trY: fe = fe { v: [0; 10] };
@@ -4112,25 +4112,25 @@ unsafe extern "C" fn x25519_ge_sub(
     fe_sub(&mut (*r).Z, &mut trZ, &mut trT);
     fe_add(&mut (*r).T, &mut trZ, &mut trT);
 }
-unsafe extern "C" fn cmov(mut t: *mut ge_precomp, mut u: *const ge_precomp, mut b: uint8_t) {
+unsafe extern "C" fn cmov(t: *mut ge_precomp, u: *const ge_precomp, b: uint8_t) {
     fe_cmov(&mut (*t).yplusx, &(*u).yplusx, b as fe_limb_t);
     fe_cmov(&mut (*t).yminusx, &(*u).yminusx, b as fe_limb_t);
     fe_cmov(&mut (*t).xy2d, &(*u).xy2d, b as fe_limb_t);
 }
 unsafe extern "C" fn x25519_ge_scalarmult_small_precomp(
-    mut h: *mut ge_p3,
-    mut a: *const uint8_t,
-    mut precomp_table: *const uint8_t,
+    h: *mut ge_p3,
+    a: *const uint8_t,
+    precomp_table: *const uint8_t,
 ) {
     let mut multiples: [ge_precomp; 15] = [ge_precomp {
         yplusx: fe_loose { v: [0; 10] },
         yminusx: fe_loose { v: [0; 10] },
         xy2d: fe_loose { v: [0; 10] },
     }; 15];
-    let mut i: core::ffi::c_uint = 0;
+    let mut i: core::ffi::c_uint;
     i = 0 as core::ffi::c_int as core::ffi::c_uint;
     while i < 15 as core::ffi::c_int as core::ffi::c_uint {
-        let mut bytes: *const uint8_t = &*precomp_table.offset(
+        let bytes: *const uint8_t = &*precomp_table.offset(
             i.wrapping_mul((2 as core::ffi::c_int * 32 as core::ffi::c_int) as core::ffi::c_uint)
                 as isize,
         ) as *const uint8_t;
@@ -4138,7 +4138,7 @@ unsafe extern "C" fn x25519_ge_scalarmult_small_precomp(
         let mut y: fe = fe { v: [0; 10] };
         fe_frombytes_strict(&mut x, bytes);
         fe_frombytes_strict(&mut y, bytes.offset(32 as core::ffi::c_int as isize));
-        let mut out: *mut ge_precomp =
+        let out: *mut ge_precomp =
             &mut *multiples.as_mut_ptr().offset(i as isize) as *mut ge_precomp;
         fe_add(&mut (*out).yplusx, &mut y, &mut x);
         fe_sub(&mut (*out).yminusx, &mut y, &mut x);
@@ -4149,7 +4149,7 @@ unsafe extern "C" fn x25519_ge_scalarmult_small_precomp(
     ge_p3_0(h);
     i = 63 as core::ffi::c_int as core::ffi::c_uint;
     while i < 64 as core::ffi::c_int as core::ffi::c_uint {
-        let mut j: core::ffi::c_uint = 0;
+        let mut j: core::ffi::c_uint;
         let mut index: core::ffi::c_schar = 0 as core::ffi::c_int as core::ffi::c_schar;
         j = 0 as core::ffi::c_int as core::ffi::c_uint;
         while j < 4 as core::ffi::c_int as core::ffi::c_uint {
@@ -4206,16 +4206,16 @@ unsafe extern "C" fn x25519_ge_scalarmult_small_precomp(
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_ge_scalarmult_base(
-    mut h: *mut ge_p3,
-    mut a: *const uint8_t,
-    mut use_adx: core::ffi::c_int,
+    h: *mut ge_p3,
+    a: *const uint8_t,
+    _use_adx: core::ffi::c_int,
 ) {
     x25519_ge_scalarmult_small_precomp(h, a, k25519SmallPrecomp.as_ptr());
 }
-unsafe extern "C" fn slide(mut r: *mut core::ffi::c_schar, mut a: *const uint8_t) {
-    let mut i: core::ffi::c_int = 0;
-    let mut b: core::ffi::c_int = 0;
-    let mut k: core::ffi::c_int = 0;
+unsafe extern "C" fn slide(r: *mut core::ffi::c_schar, a: *const uint8_t) {
+    let mut i: core::ffi::c_int;
+    let mut b: core::ffi::c_int;
+    let mut k: core::ffi::c_int;
     i = 0 as core::ffi::c_int;
     while i < 256 as core::ffi::c_int {
         *r.offset(i as isize) = (1 as core::ffi::c_int
@@ -4269,10 +4269,10 @@ unsafe extern "C" fn slide(mut r: *mut core::ffi::c_schar, mut a: *const uint8_t
     }
 }
 unsafe extern "C" fn ge_double_scalarmult_vartime(
-    mut r: *mut ge_p2,
-    mut a: *const uint8_t,
-    mut A: *const ge_p3,
-    mut b: *const uint8_t,
+    r: *mut ge_p2,
+    a: *const uint8_t,
+    A: *const ge_p3,
+    b: *const uint8_t,
 ) {
     let mut aslide: [core::ffi::c_schar; 256] = [0; 256];
     let mut bslide: [core::ffi::c_schar; 256] = [0; 256];
@@ -4300,7 +4300,7 @@ unsafe extern "C" fn ge_double_scalarmult_vartime(
         Z: fe { v: [0; 10] },
         T: fe { v: [0; 10] },
     };
-    let mut i: core::ffi::c_int = 0;
+    let mut i: core::ffi::c_int;
     slide(aslide.as_mut_ptr(), a);
     slide(bslide.as_mut_ptr(), b);
     x25519_ge_p3_to_cached(
@@ -4438,11 +4438,11 @@ unsafe extern "C" fn ge_double_scalarmult_vartime(
     }
 }
 #[inline]
-unsafe extern "C" fn int64_lshift21(mut a: int64_t) -> int64_t {
+unsafe extern "C" fn int64_lshift21(a: int64_t) -> int64_t {
     return ((a as uint64_t) << 21 as core::ffi::c_int) as int64_t;
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_sc_reduce(mut s: *mut uint8_t) {
+pub unsafe extern "C" fn x25519_sc_reduce(s: *mut uint8_t) {
     let mut s0: int64_t =
         (2097151 as core::ffi::c_int as u64 & load_3(s as *const uint8_t)) as int64_t;
     let mut s1: int64_t = (2097151 as core::ffi::c_int as u64
@@ -4496,82 +4496,82 @@ pub unsafe extern "C" fn x25519_sc_reduce(mut s: *mut uint8_t) {
     let mut s17: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(s.offset(44 as core::ffi::c_int as isize) as *const uint8_t)
             >> 5 as core::ffi::c_int) as int64_t;
-    let mut s18: int64_t = (2097151 as core::ffi::c_int as u64
+    let s18: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(s.offset(47 as core::ffi::c_int as isize) as *const uint8_t)
             >> 2 as core::ffi::c_int) as int64_t;
-    let mut s19: int64_t = (2097151 as core::ffi::c_int as u64
+    let s19: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(s.offset(49 as core::ffi::c_int as isize) as *const uint8_t)
             >> 7 as core::ffi::c_int) as int64_t;
-    let mut s20: int64_t = (2097151 as core::ffi::c_int as u64
+    let s20: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(s.offset(52 as core::ffi::c_int as isize) as *const uint8_t)
             >> 4 as core::ffi::c_int) as int64_t;
-    let mut s21: int64_t = (2097151 as core::ffi::c_int as u64
+    let s21: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(s.offset(55 as core::ffi::c_int as isize) as *const uint8_t)
             >> 1 as core::ffi::c_int) as int64_t;
-    let mut s22: int64_t = (2097151 as core::ffi::c_int as u64
+    let s22: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(s.offset(57 as core::ffi::c_int as isize) as *const uint8_t)
             >> 6 as core::ffi::c_int) as int64_t;
-    let mut s23: int64_t = (load_4(s.offset(60 as core::ffi::c_int as isize) as *const uint8_t)
+    let s23: int64_t = (load_4(s.offset(60 as core::ffi::c_int as isize) as *const uint8_t)
         >> 3 as core::ffi::c_int) as int64_t;
-    let mut carry0: int64_t = 0;
-    let mut carry1: int64_t = 0;
-    let mut carry2: int64_t = 0;
-    let mut carry3: int64_t = 0;
-    let mut carry4: int64_t = 0;
-    let mut carry5: int64_t = 0;
-    let mut carry6: int64_t = 0;
-    let mut carry7: int64_t = 0;
-    let mut carry8: int64_t = 0;
-    let mut carry9: int64_t = 0;
-    let mut carry10: int64_t = 0;
-    let mut carry11: int64_t = 0;
-    let mut carry12: int64_t = 0;
-    let mut carry13: int64_t = 0;
-    let mut carry14: int64_t = 0;
-    let mut carry15: int64_t = 0;
-    let mut carry16: int64_t = 0;
+    let mut carry0: int64_t;
+    let mut carry1: int64_t;
+    let mut carry2: int64_t;
+    let mut carry3: int64_t;
+    let mut carry4: int64_t;
+    let mut carry5: int64_t;
+    let mut carry6: int64_t;
+    let mut carry7: int64_t;
+    let mut carry8: int64_t;
+    let mut carry9: int64_t;
+    let mut carry10: int64_t;
+    let mut carry11: int64_t;
+    let carry12: int64_t;
+    let carry13: int64_t;
+    let carry14: int64_t;
+    let carry15: int64_t;
+    let carry16: int64_t;
     s11 += s23 * 666643 as core::ffi::c_int as i64;
     s12 += s23 * 470296 as core::ffi::c_int as i64;
     s13 += s23 * 654183 as core::ffi::c_int as i64;
     s14 -= s23 * 997805 as core::ffi::c_int as i64;
     s15 += s23 * 136657 as core::ffi::c_int as i64;
     s16 -= s23 * 683901 as core::ffi::c_int as i64;
-    s23 = 0 as core::ffi::c_int as int64_t;
+    s23 as core::ffi::c_int as int64_t;
     s10 += s22 * 666643 as core::ffi::c_int as i64;
     s11 += s22 * 470296 as core::ffi::c_int as i64;
     s12 += s22 * 654183 as core::ffi::c_int as i64;
     s13 -= s22 * 997805 as core::ffi::c_int as i64;
     s14 += s22 * 136657 as core::ffi::c_int as i64;
     s15 -= s22 * 683901 as core::ffi::c_int as i64;
-    s22 = 0 as core::ffi::c_int as int64_t;
+    s22 as core::ffi::c_int as int64_t;
     s9 += s21 * 666643 as core::ffi::c_int as i64;
     s10 += s21 * 470296 as core::ffi::c_int as i64;
     s11 += s21 * 654183 as core::ffi::c_int as i64;
     s12 -= s21 * 997805 as core::ffi::c_int as i64;
     s13 += s21 * 136657 as core::ffi::c_int as i64;
     s14 -= s21 * 683901 as core::ffi::c_int as i64;
-    s21 = 0 as core::ffi::c_int as int64_t;
+    s21 as core::ffi::c_int as int64_t;
     s8 += s20 * 666643 as core::ffi::c_int as i64;
     s9 += s20 * 470296 as core::ffi::c_int as i64;
     s10 += s20 * 654183 as core::ffi::c_int as i64;
     s11 -= s20 * 997805 as core::ffi::c_int as i64;
     s12 += s20 * 136657 as core::ffi::c_int as i64;
     s13 -= s20 * 683901 as core::ffi::c_int as i64;
-    s20 = 0 as core::ffi::c_int as int64_t;
+    s20 as core::ffi::c_int as int64_t;
     s7 += s19 * 666643 as core::ffi::c_int as i64;
     s8 += s19 * 470296 as core::ffi::c_int as i64;
     s9 += s19 * 654183 as core::ffi::c_int as i64;
     s10 -= s19 * 997805 as core::ffi::c_int as i64;
     s11 += s19 * 136657 as core::ffi::c_int as i64;
     s12 -= s19 * 683901 as core::ffi::c_int as i64;
-    s19 = 0 as core::ffi::c_int as int64_t;
+    s19 as core::ffi::c_int as int64_t;
     s6 += s18 * 666643 as core::ffi::c_int as i64;
     s7 += s18 * 470296 as core::ffi::c_int as i64;
     s8 += s18 * 654183 as core::ffi::c_int as i64;
     s9 -= s18 * 997805 as core::ffi::c_int as i64;
     s10 += s18 * 136657 as core::ffi::c_int as i64;
     s11 -= s18 * 683901 as core::ffi::c_int as i64;
-    s18 = 0 as core::ffi::c_int as int64_t;
+    s18 as core::ffi::c_int as int64_t;
     carry6 =
         s6 + ((1 as core::ffi::c_int) << 20 as core::ffi::c_int) as i64 >> 21 as core::ffi::c_int;
     s7 += carry6;
@@ -4622,35 +4622,35 @@ pub unsafe extern "C" fn x25519_sc_reduce(mut s: *mut uint8_t) {
     s8 -= s17 * 997805 as core::ffi::c_int as i64;
     s9 += s17 * 136657 as core::ffi::c_int as i64;
     s10 -= s17 * 683901 as core::ffi::c_int as i64;
-    s17 = 0 as core::ffi::c_int as int64_t;
+    s17 as core::ffi::c_int as int64_t;
     s4 += s16 * 666643 as core::ffi::c_int as i64;
     s5 += s16 * 470296 as core::ffi::c_int as i64;
     s6 += s16 * 654183 as core::ffi::c_int as i64;
     s7 -= s16 * 997805 as core::ffi::c_int as i64;
     s8 += s16 * 136657 as core::ffi::c_int as i64;
     s9 -= s16 * 683901 as core::ffi::c_int as i64;
-    s16 = 0 as core::ffi::c_int as int64_t;
+    s16 as core::ffi::c_int as int64_t;
     s3 += s15 * 666643 as core::ffi::c_int as i64;
     s4 += s15 * 470296 as core::ffi::c_int as i64;
     s5 += s15 * 654183 as core::ffi::c_int as i64;
     s6 -= s15 * 997805 as core::ffi::c_int as i64;
     s7 += s15 * 136657 as core::ffi::c_int as i64;
     s8 -= s15 * 683901 as core::ffi::c_int as i64;
-    s15 = 0 as core::ffi::c_int as int64_t;
+    s15 as core::ffi::c_int as int64_t;
     s2 += s14 * 666643 as core::ffi::c_int as i64;
     s3 += s14 * 470296 as core::ffi::c_int as i64;
     s4 += s14 * 654183 as core::ffi::c_int as i64;
     s5 -= s14 * 997805 as core::ffi::c_int as i64;
     s6 += s14 * 136657 as core::ffi::c_int as i64;
     s7 -= s14 * 683901 as core::ffi::c_int as i64;
-    s14 = 0 as core::ffi::c_int as int64_t;
+    s14 as core::ffi::c_int as int64_t;
     s1 += s13 * 666643 as core::ffi::c_int as i64;
     s2 += s13 * 470296 as core::ffi::c_int as i64;
     s3 += s13 * 654183 as core::ffi::c_int as i64;
     s4 -= s13 * 997805 as core::ffi::c_int as i64;
     s5 += s13 * 136657 as core::ffi::c_int as i64;
     s6 -= s13 * 683901 as core::ffi::c_int as i64;
-    s13 = 0 as core::ffi::c_int as int64_t;
+    s13 as core::ffi::c_int as int64_t;
     s0 += s12 * 666643 as core::ffi::c_int as i64;
     s1 += s12 * 470296 as core::ffi::c_int as i64;
     s2 += s12 * 654183 as core::ffi::c_int as i64;
@@ -4755,7 +4755,7 @@ pub unsafe extern "C" fn x25519_sc_reduce(mut s: *mut uint8_t) {
     s3 -= s12 * 997805 as core::ffi::c_int as i64;
     s4 += s12 * 136657 as core::ffi::c_int as i64;
     s5 -= s12 * 683901 as core::ffi::c_int as i64;
-    s12 = 0 as core::ffi::c_int as int64_t;
+    s12 as core::ffi::c_int as int64_t;
     carry0 = s0 >> 21 as core::ffi::c_int;
     s1 += carry0;
     s0 -= int64_lshift21(carry0);
@@ -4833,154 +4833,154 @@ pub unsafe extern "C" fn x25519_sc_reduce(mut s: *mut uint8_t) {
     *s.offset(31 as core::ffi::c_int as isize) = (s11 >> 17 as core::ffi::c_int) as uint8_t;
 }
 unsafe extern "C" fn sc_muladd(
-    mut s: *mut uint8_t,
-    mut a: *const uint8_t,
-    mut b: *const uint8_t,
-    mut c: *const uint8_t,
+    s: *mut uint8_t,
+    a: *const uint8_t,
+    b: *const uint8_t,
+    c: *const uint8_t,
 ) {
-    let mut a0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(a)) as int64_t;
-    let mut a1: int64_t = (2097151 as core::ffi::c_int as u64
+    let a0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(a)) as int64_t;
+    let a1: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(a.offset(2 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut a2: int64_t = (2097151 as core::ffi::c_int as u64
+    let a2: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(a.offset(5 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut a3: int64_t = (2097151 as core::ffi::c_int as u64
+    let a3: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(a.offset(7 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int)
         as int64_t;
-    let mut a4: int64_t = (2097151 as core::ffi::c_int as u64
+    let a4: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(a.offset(10 as core::ffi::c_int as isize)) >> 4 as core::ffi::c_int)
         as int64_t;
-    let mut a5: int64_t = (2097151 as core::ffi::c_int as u64
+    let a5: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(a.offset(13 as core::ffi::c_int as isize)) >> 1 as core::ffi::c_int)
         as int64_t;
-    let mut a6: int64_t = (2097151 as core::ffi::c_int as u64
+    let a6: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(a.offset(15 as core::ffi::c_int as isize)) >> 6 as core::ffi::c_int)
         as int64_t;
-    let mut a7: int64_t = (2097151 as core::ffi::c_int as u64
+    let a7: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(a.offset(18 as core::ffi::c_int as isize)) >> 3 as core::ffi::c_int)
         as int64_t;
-    let mut a8: int64_t = (2097151 as core::ffi::c_int as u64
+    let a8: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(a.offset(21 as core::ffi::c_int as isize))) as int64_t;
-    let mut a9: int64_t = (2097151 as core::ffi::c_int as u64
+    let a9: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(a.offset(23 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut a10: int64_t = (2097151 as core::ffi::c_int as u64
+    let a10: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(a.offset(26 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut a11: int64_t =
+    let a11: int64_t =
         (load_4(a.offset(28 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int) as int64_t;
-    let mut b0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(b)) as int64_t;
-    let mut b1: int64_t = (2097151 as core::ffi::c_int as u64
+    let b0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(b)) as int64_t;
+    let b1: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(b.offset(2 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut b2: int64_t = (2097151 as core::ffi::c_int as u64
+    let b2: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(b.offset(5 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut b3: int64_t = (2097151 as core::ffi::c_int as u64
+    let b3: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(b.offset(7 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int)
         as int64_t;
-    let mut b4: int64_t = (2097151 as core::ffi::c_int as u64
+    let b4: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(b.offset(10 as core::ffi::c_int as isize)) >> 4 as core::ffi::c_int)
         as int64_t;
-    let mut b5: int64_t = (2097151 as core::ffi::c_int as u64
+    let b5: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(b.offset(13 as core::ffi::c_int as isize)) >> 1 as core::ffi::c_int)
         as int64_t;
-    let mut b6: int64_t = (2097151 as core::ffi::c_int as u64
+    let b6: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(b.offset(15 as core::ffi::c_int as isize)) >> 6 as core::ffi::c_int)
         as int64_t;
-    let mut b7: int64_t = (2097151 as core::ffi::c_int as u64
+    let b7: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(b.offset(18 as core::ffi::c_int as isize)) >> 3 as core::ffi::c_int)
         as int64_t;
-    let mut b8: int64_t = (2097151 as core::ffi::c_int as u64
+    let b8: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(b.offset(21 as core::ffi::c_int as isize))) as int64_t;
-    let mut b9: int64_t = (2097151 as core::ffi::c_int as u64
+    let b9: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(b.offset(23 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut b10: int64_t = (2097151 as core::ffi::c_int as u64
+    let b10: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(b.offset(26 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut b11: int64_t =
+    let b11: int64_t =
         (load_4(b.offset(28 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int) as int64_t;
-    let mut c0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(c)) as int64_t;
-    let mut c1: int64_t = (2097151 as core::ffi::c_int as u64
+    let c0: int64_t = (2097151 as core::ffi::c_int as u64 & load_3(c)) as int64_t;
+    let c1: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(c.offset(2 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut c2: int64_t = (2097151 as core::ffi::c_int as u64
+    let c2: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(c.offset(5 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut c3: int64_t = (2097151 as core::ffi::c_int as u64
+    let c3: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(c.offset(7 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int)
         as int64_t;
-    let mut c4: int64_t = (2097151 as core::ffi::c_int as u64
+    let c4: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(c.offset(10 as core::ffi::c_int as isize)) >> 4 as core::ffi::c_int)
         as int64_t;
-    let mut c5: int64_t = (2097151 as core::ffi::c_int as u64
+    let c5: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(c.offset(13 as core::ffi::c_int as isize)) >> 1 as core::ffi::c_int)
         as int64_t;
-    let mut c6: int64_t = (2097151 as core::ffi::c_int as u64
+    let c6: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(c.offset(15 as core::ffi::c_int as isize)) >> 6 as core::ffi::c_int)
         as int64_t;
-    let mut c7: int64_t = (2097151 as core::ffi::c_int as u64
+    let c7: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(c.offset(18 as core::ffi::c_int as isize)) >> 3 as core::ffi::c_int)
         as int64_t;
-    let mut c8: int64_t = (2097151 as core::ffi::c_int as u64
+    let c8: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(c.offset(21 as core::ffi::c_int as isize))) as int64_t;
-    let mut c9: int64_t = (2097151 as core::ffi::c_int as u64
+    let c9: int64_t = (2097151 as core::ffi::c_int as u64
         & load_4(c.offset(23 as core::ffi::c_int as isize)) >> 5 as core::ffi::c_int)
         as int64_t;
-    let mut c10: int64_t = (2097151 as core::ffi::c_int as u64
+    let c10: int64_t = (2097151 as core::ffi::c_int as u64
         & load_3(c.offset(26 as core::ffi::c_int as isize)) >> 2 as core::ffi::c_int)
         as int64_t;
-    let mut c11: int64_t =
+    let c11: int64_t =
         (load_4(c.offset(28 as core::ffi::c_int as isize)) >> 7 as core::ffi::c_int) as int64_t;
-    let mut s0: int64_t = 0;
-    let mut s1: int64_t = 0;
-    let mut s2: int64_t = 0;
-    let mut s3: int64_t = 0;
-    let mut s4: int64_t = 0;
-    let mut s5: int64_t = 0;
-    let mut s6: int64_t = 0;
-    let mut s7: int64_t = 0;
-    let mut s8: int64_t = 0;
-    let mut s9: int64_t = 0;
-    let mut s10: int64_t = 0;
-    let mut s11: int64_t = 0;
-    let mut s12: int64_t = 0;
-    let mut s13: int64_t = 0;
-    let mut s14: int64_t = 0;
-    let mut s15: int64_t = 0;
-    let mut s16: int64_t = 0;
-    let mut s17: int64_t = 0;
-    let mut s18: int64_t = 0;
-    let mut s19: int64_t = 0;
-    let mut s20: int64_t = 0;
-    let mut s21: int64_t = 0;
-    let mut s22: int64_t = 0;
-    let mut s23: int64_t = 0;
-    let mut carry0: int64_t = 0;
-    let mut carry1: int64_t = 0;
-    let mut carry2: int64_t = 0;
-    let mut carry3: int64_t = 0;
-    let mut carry4: int64_t = 0;
-    let mut carry5: int64_t = 0;
-    let mut carry6: int64_t = 0;
-    let mut carry7: int64_t = 0;
-    let mut carry8: int64_t = 0;
-    let mut carry9: int64_t = 0;
-    let mut carry10: int64_t = 0;
-    let mut carry11: int64_t = 0;
-    let mut carry12: int64_t = 0;
-    let mut carry13: int64_t = 0;
-    let mut carry14: int64_t = 0;
-    let mut carry15: int64_t = 0;
-    let mut carry16: int64_t = 0;
-    let mut carry17: int64_t = 0;
-    let mut carry18: int64_t = 0;
-    let mut carry19: int64_t = 0;
-    let mut carry20: int64_t = 0;
-    let mut carry21: int64_t = 0;
-    let mut carry22: int64_t = 0;
+    let mut s0: int64_t;
+    let mut s1: int64_t;
+    let mut s2: int64_t;
+    let mut s3: int64_t;
+    let mut s4: int64_t;
+    let mut s5: int64_t;
+    let mut s6: int64_t;
+    let mut s7: int64_t;
+    let mut s8: int64_t;
+    let mut s9: int64_t;
+    let mut s10: int64_t;
+    let mut s11: int64_t;
+    let mut s12: int64_t;
+    let mut s13: int64_t;
+    let mut s14: int64_t;
+    let mut s15: int64_t;
+    let mut s16: int64_t;
+    let mut s17: int64_t;
+    let mut s18: int64_t;
+    let mut s19: int64_t;
+    let mut s20: int64_t;
+    let mut s21: int64_t;
+    let mut s22: int64_t;
+    let mut s23: int64_t;
+    let mut carry0: int64_t;
+    let mut carry1: int64_t;
+    let mut carry2: int64_t;
+    let mut carry3: int64_t;
+    let mut carry4: int64_t;
+    let mut carry5: int64_t;
+    let mut carry6: int64_t;
+    let mut carry7: int64_t;
+    let mut carry8: int64_t;
+    let mut carry9: int64_t;
+    let mut carry10: int64_t;
+    let mut carry11: int64_t;
+    let mut carry12: int64_t;
+    let mut carry13: int64_t;
+    let mut carry14: int64_t;
+    let mut carry15: int64_t;
+    let mut carry16: int64_t;
+    let carry17: int64_t;
+    let carry18: int64_t;
+    let carry19: int64_t;
+    let carry20: int64_t;
+    let carry21: int64_t;
+    let carry22: int64_t;
     s0 = c0 + a0 * b0;
     s1 = c1 + a0 * b1 + a1 * b0;
     s2 = c2 + a0 * b2 + a1 * b1 + a2 * b0;
@@ -5165,42 +5165,42 @@ unsafe extern "C" fn sc_muladd(
     s14 -= s23 * 997805 as core::ffi::c_int as i64;
     s15 += s23 * 136657 as core::ffi::c_int as i64;
     s16 -= s23 * 683901 as core::ffi::c_int as i64;
-    s23 = 0 as core::ffi::c_int as int64_t;
+    s23 as core::ffi::c_int as int64_t;
     s10 += s22 * 666643 as core::ffi::c_int as i64;
     s11 += s22 * 470296 as core::ffi::c_int as i64;
     s12 += s22 * 654183 as core::ffi::c_int as i64;
     s13 -= s22 * 997805 as core::ffi::c_int as i64;
     s14 += s22 * 136657 as core::ffi::c_int as i64;
     s15 -= s22 * 683901 as core::ffi::c_int as i64;
-    s22 = 0 as core::ffi::c_int as int64_t;
+    s22 as core::ffi::c_int as int64_t;
     s9 += s21 * 666643 as core::ffi::c_int as i64;
     s10 += s21 * 470296 as core::ffi::c_int as i64;
     s11 += s21 * 654183 as core::ffi::c_int as i64;
     s12 -= s21 * 997805 as core::ffi::c_int as i64;
     s13 += s21 * 136657 as core::ffi::c_int as i64;
     s14 -= s21 * 683901 as core::ffi::c_int as i64;
-    s21 = 0 as core::ffi::c_int as int64_t;
+    s21 as core::ffi::c_int as int64_t;
     s8 += s20 * 666643 as core::ffi::c_int as i64;
     s9 += s20 * 470296 as core::ffi::c_int as i64;
     s10 += s20 * 654183 as core::ffi::c_int as i64;
     s11 -= s20 * 997805 as core::ffi::c_int as i64;
     s12 += s20 * 136657 as core::ffi::c_int as i64;
     s13 -= s20 * 683901 as core::ffi::c_int as i64;
-    s20 = 0 as core::ffi::c_int as int64_t;
+    s20 as core::ffi::c_int as int64_t;
     s7 += s19 * 666643 as core::ffi::c_int as i64;
     s8 += s19 * 470296 as core::ffi::c_int as i64;
     s9 += s19 * 654183 as core::ffi::c_int as i64;
     s10 -= s19 * 997805 as core::ffi::c_int as i64;
     s11 += s19 * 136657 as core::ffi::c_int as i64;
     s12 -= s19 * 683901 as core::ffi::c_int as i64;
-    s19 = 0 as core::ffi::c_int as int64_t;
+    s19 as core::ffi::c_int as int64_t;
     s6 += s18 * 666643 as core::ffi::c_int as i64;
     s7 += s18 * 470296 as core::ffi::c_int as i64;
     s8 += s18 * 654183 as core::ffi::c_int as i64;
     s9 -= s18 * 997805 as core::ffi::c_int as i64;
     s10 += s18 * 136657 as core::ffi::c_int as i64;
     s11 -= s18 * 683901 as core::ffi::c_int as i64;
-    s18 = 0 as core::ffi::c_int as int64_t;
+    s18 as core::ffi::c_int as int64_t;
     carry6 =
         s6 + ((1 as core::ffi::c_int) << 20 as core::ffi::c_int) as i64 >> 21 as core::ffi::c_int;
     s7 += carry6;
@@ -5251,35 +5251,35 @@ unsafe extern "C" fn sc_muladd(
     s8 -= s17 * 997805 as core::ffi::c_int as i64;
     s9 += s17 * 136657 as core::ffi::c_int as i64;
     s10 -= s17 * 683901 as core::ffi::c_int as i64;
-    s17 = 0 as core::ffi::c_int as int64_t;
+    s17 as core::ffi::c_int as int64_t;
     s4 += s16 * 666643 as core::ffi::c_int as i64;
     s5 += s16 * 470296 as core::ffi::c_int as i64;
     s6 += s16 * 654183 as core::ffi::c_int as i64;
     s7 -= s16 * 997805 as core::ffi::c_int as i64;
     s8 += s16 * 136657 as core::ffi::c_int as i64;
     s9 -= s16 * 683901 as core::ffi::c_int as i64;
-    s16 = 0 as core::ffi::c_int as int64_t;
+    s16 as core::ffi::c_int as int64_t;
     s3 += s15 * 666643 as core::ffi::c_int as i64;
     s4 += s15 * 470296 as core::ffi::c_int as i64;
     s5 += s15 * 654183 as core::ffi::c_int as i64;
     s6 -= s15 * 997805 as core::ffi::c_int as i64;
     s7 += s15 * 136657 as core::ffi::c_int as i64;
     s8 -= s15 * 683901 as core::ffi::c_int as i64;
-    s15 = 0 as core::ffi::c_int as int64_t;
+    s15 as core::ffi::c_int as int64_t;
     s2 += s14 * 666643 as core::ffi::c_int as i64;
     s3 += s14 * 470296 as core::ffi::c_int as i64;
     s4 += s14 * 654183 as core::ffi::c_int as i64;
     s5 -= s14 * 997805 as core::ffi::c_int as i64;
     s6 += s14 * 136657 as core::ffi::c_int as i64;
     s7 -= s14 * 683901 as core::ffi::c_int as i64;
-    s14 = 0 as core::ffi::c_int as int64_t;
+    s14 as core::ffi::c_int as int64_t;
     s1 += s13 * 666643 as core::ffi::c_int as i64;
     s2 += s13 * 470296 as core::ffi::c_int as i64;
     s3 += s13 * 654183 as core::ffi::c_int as i64;
     s4 -= s13 * 997805 as core::ffi::c_int as i64;
     s5 += s13 * 136657 as core::ffi::c_int as i64;
     s6 -= s13 * 683901 as core::ffi::c_int as i64;
-    s13 = 0 as core::ffi::c_int as int64_t;
+    s13 as core::ffi::c_int as int64_t;
     s0 += s12 * 666643 as core::ffi::c_int as i64;
     s1 += s12 * 470296 as core::ffi::c_int as i64;
     s2 += s12 * 654183 as core::ffi::c_int as i64;
@@ -5384,7 +5384,7 @@ unsafe extern "C" fn sc_muladd(
     s3 -= s12 * 997805 as core::ffi::c_int as i64;
     s4 += s12 * 136657 as core::ffi::c_int as i64;
     s5 -= s12 * 683901 as core::ffi::c_int as i64;
-    s12 = 0 as core::ffi::c_int as int64_t;
+    s12 as core::ffi::c_int as int64_t;
     carry0 = s0 >> 21 as core::ffi::c_int;
     s1 += carry0;
     s0 -= int64_lshift21(carry0);
@@ -5463,9 +5463,9 @@ unsafe extern "C" fn sc_muladd(
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_scalar_mult_generic_masked(
-    mut out: *mut uint8_t,
-    mut scalar_masked: *const uint8_t,
-    mut point: *const uint8_t,
+    out: *mut uint8_t,
+    scalar_masked: *const uint8_t,
+    point: *const uint8_t,
 ) {
     let mut x1: fe = fe { v: [0; 10] };
     let mut x2: fe = fe { v: [0; 10] };
@@ -5491,10 +5491,10 @@ pub unsafe extern "C" fn x25519_scalar_mult_generic_masked(
     fe_copy(&mut x3, &mut x1);
     fe_1(&mut z3);
     let mut swap: core::ffi::c_uint = 0 as core::ffi::c_int as core::ffi::c_uint;
-    let mut pos: core::ffi::c_int = 0;
+    let mut pos: core::ffi::c_int;
     pos = 254 as core::ffi::c_int;
     while pos >= 0 as core::ffi::c_int {
-        let mut b: core::ffi::c_uint = (1 as core::ffi::c_int
+        let b: core::ffi::c_uint = (1 as core::ffi::c_int
             & e[(pos / 8 as core::ffi::c_int) as usize] as core::ffi::c_int
                 >> (pos & 7 as core::ffi::c_int))
             as core::ffi::c_uint;
@@ -5530,9 +5530,9 @@ pub unsafe extern "C" fn x25519_scalar_mult_generic_masked(
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_public_from_private_generic_masked(
-    mut out_public_value: *mut uint8_t,
-    mut private_key_masked: *const uint8_t,
-    mut use_adx: core::ffi::c_int,
+    out_public_value: *mut uint8_t,
+    private_key_masked: *const uint8_t,
+    use_adx: core::ffi::c_int,
 ) {
     let mut e: [uint8_t; 32] = [0; 32];
     OPENSSL_memcpy(
@@ -5557,38 +5557,38 @@ pub unsafe extern "C" fn x25519_public_from_private_generic_masked(
     fe_tobytes(out_public_value, &mut zminusy_inv);
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_fe_invert(mut out: *mut fe, mut z: *const fe) {
+pub unsafe extern "C" fn x25519_fe_invert(out: *mut fe, z: *const fe) {
     fe_invert(out, z);
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_fe_isnegative(mut f: *const fe) -> uint8_t {
+pub unsafe extern "C" fn x25519_fe_isnegative(f: *const fe) -> uint8_t {
     return fe_isnegative(f) as uint8_t;
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_fe_mul_ttt(mut h: *mut fe, mut f: *const fe, mut g: *const fe) {
+pub unsafe extern "C" fn x25519_fe_mul_ttt(h: *mut fe, f: *const fe, g: *const fe) {
     fe_mul_ttt(h, f, g);
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_fe_neg(mut f: *mut fe) {
+pub unsafe extern "C" fn x25519_fe_neg(f: *mut fe) {
     let mut t: fe_loose = fe_loose { v: [0; 10] };
     fe_neg(&mut t, f);
     fe_carry(f, &mut t);
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_fe_tobytes(mut s: *mut uint8_t, mut h: *const fe) {
+pub unsafe extern "C" fn x25519_fe_tobytes(s: *mut uint8_t, h: *const fe) {
     fe_tobytes(s, h);
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_ge_double_scalarmult_vartime(
-    mut r: *mut ge_p2,
-    mut a: *const uint8_t,
-    mut A: *const ge_p3,
-    mut b: *const uint8_t,
+    r: *mut ge_p2,
+    a: *const uint8_t,
+    A: *const ge_p3,
+    b: *const uint8_t,
 ) {
     ge_double_scalarmult_vartime(r, a, A, b);
 }
 #[no_mangle]
-pub unsafe extern "C" fn x25519_sc_mask(mut a: *mut uint8_t) {
+pub unsafe extern "C" fn x25519_sc_mask(a: *mut uint8_t) {
     let ref mut fresh5 = *a.offset(0 as core::ffi::c_int as isize);
     *fresh5 = (*fresh5 as core::ffi::c_int & 248 as core::ffi::c_int) as uint8_t;
     let ref mut fresh6 = *a.offset(31 as core::ffi::c_int as isize);
@@ -5598,10 +5598,10 @@ pub unsafe extern "C" fn x25519_sc_mask(mut a: *mut uint8_t) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn x25519_sc_muladd(
-    mut s: *mut uint8_t,
-    mut a: *const uint8_t,
-    mut b: *const uint8_t,
-    mut c: *const uint8_t,
+    s: *mut uint8_t,
+    a: *const uint8_t,
+    b: *const uint8_t,
+    c: *const uint8_t,
 ) {
     sc_muladd(s, a, b, c);
 }
